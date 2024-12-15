@@ -9,6 +9,9 @@ import {store} from './store/store'
 import './App.css';
 //Labor Work Flow
 import MainPage from './components/WorkerFlow/MainPage';
+import AppliedPage from './components/WorkerFlow/AppliedPage';
+// import OngoingPage from './components/WorkerFlow/OngoingPage';
+
 
 
 function App(){
@@ -20,6 +23,8 @@ function App(){
       <Router>
         <Routes>
           <Route path="/" element={<MainPage />} />
+          <Route path="/applied" element={<AppliedPage />} />
+          {/* <Route path="/ongoing" element={<OngoingPage />} /> */}
         </Routes>
       </Router>
     </Provider>
