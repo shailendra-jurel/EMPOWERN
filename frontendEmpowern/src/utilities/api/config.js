@@ -2,9 +2,7 @@
 
 /**
  * API Configuration Module
- * 
- * This module provides centralized configuration for different 
- * environment settings, retry mechanisms, and API endpoints.
+ * This module provides centralized configuration for different  environment settings, retry mechanisms, and API endpoints.
  */
 export const API_CONFIG = {
     /**
@@ -29,10 +27,9 @@ export const API_CONFIG = {
       }
     },
     
-    /**
-     * Retry mechanism configuration
-     * Helps handle temporary network issues or server hiccups
-     */
+    
+      // Retry mechanism configuration  Helps handle temporary network issues or server hiccups
+     
     RETRY: {
       ATTEMPTS: 3, // Number of retry attempts for failed requests
       DELAY: 1000, // Initial delay between retries in milliseconds

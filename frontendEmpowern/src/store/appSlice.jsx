@@ -4,7 +4,7 @@ const  initialState = {
 
     userId : '',
     selectedQuipmentId : '',
-    selectedRole : '',
+    selectedJob : '',
     machineCategor : '',
     machineId : ' ',
     MachineOwnerId : '',
@@ -14,6 +14,7 @@ const  initialState = {
     projectId : '',
     workerId : '',
     jobAssignmentId : '' ,
+    
 }
 
 const appSlice = createSlice({
@@ -31,8 +32,8 @@ const appSlice = createSlice({
 
         },
 
-        setSelectedRole(state , action){
-            state.selectedRole = action.payload;
+        setSelectedJob(state , action){
+            state.selectedJob = action.payload;
         },
         setMachineId(state , action){
             state.machineId =  action.payload;
@@ -73,7 +74,6 @@ export const {
     setUserId, setBorrowerId , setContractorId ,
     setJobAssignId  , setMachineCategory , setProjectId ,
     setRenteeId , setMachineOwnerId , setSelectQuipmentId ,
-    setSelectedRole , setWokerId, setMachineId
-}  = appSlice.actions
+    setSelectedJob , setWokerId, setMachineId,}  = appSlice.actions
 
 export default appSlice.reducer;

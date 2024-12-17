@@ -10,6 +10,8 @@ import './App.css';
 //Labor Work Flow
 import MainPage from './components/WorkerFlow/MainPage';
 import AppliedPage from './components/WorkerFlow/AppliedPage';
+import WorkSelectionPage from './components/WorkerFlow/WorkSelectionPage';
+import WorkInformation from './components/WorkerFlow/WorkInformation';
 // import OngoingPage from './components/WorkerFlow/OngoingPage';
 
 
@@ -25,6 +27,8 @@ function App(){
           <Route path="/" element={<MainPage />} />
           <Route path="/applied" element={<AppliedPage />} />
           {/* <Route path="/ongoing" element={<OngoingPage />} /> */}
+          <Route path="/labor/work-selection" element={<WorkSelectionPage />} />
+          <Route path="/labor/work-information" element={<WorkInformation />} />
         </Routes>
       </Router>
     </Provider>

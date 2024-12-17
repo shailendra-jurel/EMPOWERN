@@ -1,7 +1,7 @@
 // src/calls/jobCalls.js
 import { axiosInstance } from './axiosInstance';
 import { BaseApiService } from './baseApiService';
-import { apiHelpers } from '../utils/api/helpers';
+import { apiHelpers } from '../utilities/api/helpers';
 
 /**
  * Job Service
@@ -25,25 +25,57 @@ super(axiosInstance, '/jobs');
  * @param {string} postedById - Unique identifier of the user who posted the jobs
  * @returns {Promise} Array of jobs posted by the user
  */
-async getByPostedId(postedById) {
+async getJobById(id) {
 try {
     // Make API call to fetch jobs by posted ID
-    const response = await this.axios.get(`${this.endpoint}/posted-by/${postedById}`);
+    const response = await this.axios.get(`${this.endpoint}/getById/${id}`);
     return response.data;
 } catch (error) {
     // Use centralized error handling
-    apiHelpers.handleError(error, 'get jobs by posted ID');
+    apiHelpers.handleError(error, 'get jobs by  ID');
+    throw error;
 }
 }
 
-// You can add more job-specific methods here as needed
+async getJobs() {
+    try {
+        console.log('Fetching jobs...'); // Debug log
+        const response = await this.axios.get(`${this.endpoint}/getAllJobs`);
+        console.log('Jobs response:', response.data); // Debug log
+        return response.data;
+    } catch (error) {
+        // apiHelpers.handleError(error, 'get all jobs');
+        console.error('Error fetching jobs:', error);
+        throw error;
+    }
 }
+
+// You can add more job-specific methods here as needed
+
+
+ async applyForJob(jobId, data) {
+    try {
+        const response = await this.axios.put(`${this.endpoint}/${jobId}`, data);
+        return response.data;
+    } catch (error) {
+        console.error('Error updating job:', error);
+        throw error;
+    }
+}
+
+
+}
+
 
 // Export a singleton instance of JobService
 export const jobService = new JobService();
 
 
+// Export both the service and individual methods
 
+export const getJobs = () => jobService.getJobs();
+export const  getJobById = (id) => jobService.getJobById(id);
+export const applyForJob = (jobId) => jobService.applyForJob(jobId, { status: 'Applied' });
 
 
 

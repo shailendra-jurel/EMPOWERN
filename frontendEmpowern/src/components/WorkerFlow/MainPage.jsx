@@ -9,6 +9,7 @@ import {
 import { useSelector } from 'react-redux';
 import { getJobAssignmentsByWorkerId } from '../../calls/JobAssignmentCalls';
 import debounce from 'lodash/debounce';
+import { useNavigate } from 'react-router-dom';
 
 // Ant Design Typography components
 const { Title, Text, Paragraph } = Typography;
@@ -24,6 +25,8 @@ const { Title, Text, Paragraph } = Typography;
 const MainPage = () => {
   // Fetch the worker ID from the global Redux store
   const { workerId } = useSelector((state) => state.app.workerId);
+
+  const navigate = useNavigate(); // Navigation hook for routing
 
   // State to store categorized job data
   const [jobData, setJobData] = useState({
@@ -272,7 +275,7 @@ const MainPage = () => {
             type="primary" 
             icon={<PlusOutlined />}
             size="large"
-            onClick={() => "Apply for New Job"} // TODO: Implement new job application flow
+            onClick={() => navigate('/labor/work-selection')}
           >
             Apply for New Job
           </Button>

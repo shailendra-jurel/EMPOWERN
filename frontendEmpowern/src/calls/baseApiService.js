@@ -1,6 +1,6 @@
 // src/calls/baseApiService.js
-import { apiHelpers } from '../utils/api/helpers';
-import { ApiCache } from '../utils/api/cache';
+import { apiHelpers } from '../utilities/api/helpers';
+import { ApiCache } from '../utilities/api/cache';
 
 export class BaseApiService {
 constructor(axiosInstance, endpoint) {

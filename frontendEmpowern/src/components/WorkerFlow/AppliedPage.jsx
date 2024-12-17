@@ -315,7 +315,7 @@ return (
         type="primary" 
         icon={<PlusOutlined />}
         size="large"
-        onClick={() => navigate('/find-jobs')} // Navigate to job search/application page
+        onClick={() => navigate('/work-selection')} // Navigate to work-selection search/application page
         >
         Find New Jobs
         </Button>

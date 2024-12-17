@@ -2,18 +2,21 @@ import React, { useState, useEffect } from 'react';
 import { Button, Typography, Card, Row, Col, Space, Select, Spin, Alert } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { getJobs } from '../../calls/jobCalls';
-import {useSelctor}  from 'react-redux';
+import {useSelector , useDispatch}  from 'react-redux';
+import { setProjectId } from '../../store/appSlice';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
 
+
 const WorkSelectionPage = () => {
-const [availableWorks, setAvailableWorks] = useState([]);
-const [filteredWorks, setFilteredWorks] = useState([]);
-const [loading, setLoading] = useState(true);
-const [error, setError] = useState(null);
-const [sortCriteria, setSortCriteria] = useState('date'); // Default sorting by date
-const { setProjectId } = useSelctor((state) => stateapp.)
+    const dispatch = useDispatch();
+    const [availableWorks, setAvailableWorks] = useState([]);
+    const [filteredWorks, setFilteredWorks] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [sortCriteria, setSortCriteria] = useState('date'); // Default sorting by date
+    // const { projectId } = useSelector((state) => state.app.projectId)
 const navigate = useNavigate();
 
 useEffect(() => {
@@ -33,8 +36,9 @@ fetchAvailableWorks();
 }, []);
 
 const handleJobClick = (jobId) => {
-setProjectId(jobId);
-navigate('/labor/work-information');
+    console.log('Job selected Id:', jobId);
+    dispatch(setProjectId(jobId));
+    navigate('/labor/work-information');
 };
 
 const handleSortChange = (value) => {
