@@ -1,17 +1,3 @@
-// import axios from 'axios';
-
-// const axiosInstance = axios.create({
-//     baseURL: 'https://labor-employement.onrender.com/api', // Replace with your API URL
-//     headers: {
-//         'Content-Type': 'application/json',
-//     },
-// });
-
-// export { axiosInstance };
-
-
-
-
 // src/calls/axiosInstance.js
 // import axios from 'axios';
 // import { API_CONFIG } from '../utilities/api/config';
@@ -21,7 +7,6 @@
 // const env = import.meta.env.NODE_ENV || 'development';
 // return API_CONFIG.ENVIRONMENTS[env.toUpperCase()];
 // };
-
 // const axiosInstance = axios.create({
 // ...getEnvironmentConfig(),
 // headers: {
@@ -30,16 +15,10 @@
 // },
 // withCredentials: true,
 // });
-
 // createInterceptors(axiosInstance);
-
 // export { axiosInstance };
 
-
-
-
 import axios from 'axios';
-
 export const axiosInstance = axios.create({
     baseURL: 'http://localhost:5000/api',
     timeout: 5000,
@@ -48,7 +27,6 @@ export const axiosInstance = axios.create({
         'Content-Type': 'application/json'
     }
 });
-
 // Add error handling
 axiosInstance.interceptors.response.use(
     (response) => response,

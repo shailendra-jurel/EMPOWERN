@@ -1,5 +1,4 @@
 // routes/jobRoutes.js
-
 //  this is just  a fake    code snippet to show how the routes are created in the backend
 const express = require('express');
 const router = express.Router();
@@ -15,7 +14,6 @@ router.get('/getAllJobs', async (req, res) => {
         next(error); // Pass to error handler
     }
 });
-
 // Get job by ID
 router.get('/getById/:id', async (req, res) => {
     try {

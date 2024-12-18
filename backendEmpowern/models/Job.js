@@ -24,8 +24,30 @@ const jobSchema = new mongoose.Schema({
         default: 'Open',
         enum: ['Open', 'Assigned', 'Completed', 'Cancelled']
     },
+    accomodation: {
+        type: Boolean
+    },
+    transportation: {
+        type: Boolean
+    },
+
+    workersRequired: {
+        type: Number,
+        // required: true
+    },
+
+    skillsRequired: {
+        type: String,
+        // required: true
+    },
+
     description: String,
-    requirements: [String],
+    // requirements: [String],
+
+    postedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Contractor'
+    },
     postedDate: {
         type: Date,
         default: Date.now

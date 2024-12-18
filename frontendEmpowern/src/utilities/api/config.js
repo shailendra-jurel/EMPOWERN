@@ -1,9 +1,6 @@
 // src/utils/api/config.js
 
-/**
- * API Configuration Module
- * This module provides centralized configuration for different  environment settings, retry mechanisms, and API endpoints.
- */
+  // API Configuration Module provides centralized configuration for different  environment settings, retry mechanisms, and API endpoints.
 export const API_CONFIG = {
     /**
      * Environment-specific API configurations
@@ -12,8 +9,8 @@ export const API_CONFIG = {
     ENVIRONMENTS: {
       // Development environment configuration
       DEVELOPMENT: {
-        baseURL: 'http://localhost:5000/api', // Local development server
-        timeout: 10000, // 10 seconds timeout for requests
+        baseURL: 'http://localhost:5000/api', 
+        timeout: 10000, 
       },
       // Production environment configuration
       PRODUCTION: {
@@ -23,13 +20,10 @@ export const API_CONFIG = {
       // Test environment configuration
       TEST: {
         baseURL: 'http://test-api.example.com/api', // Separate test environment
-        timeout: 5000, // Shorter timeout for test environments
+        timeout: 5000, 
       }
     },
-    
-    
       // Retry mechanism configuration  Helps handle temporary network issues or server hiccups
-     
     RETRY: {
       ATTEMPTS: 3, // Number of retry attempts for failed requests
       DELAY: 1000, // Initial delay between retries in milliseconds

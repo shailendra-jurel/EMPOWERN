@@ -1,8 +1,6 @@
 // src/utils/api/cache.js
-
 /**
  * API Caching Class
- * 
  * Provides an in-memory caching mechanism for API responses
  * with time-to-live (TTL) functionality
  */
@@ -13,7 +11,6 @@ constructor() {
     // Map to store timeout references for cache invalidation
     this.timeouts = new Map();
 }
-
 /**
  * Retrieve cached data or fetch new data
  * 
@@ -34,7 +31,6 @@ async get(key, fetchFn, ttl = 5 * 60 * 1000) {
     this.set(key, data, ttl);
     return data;
 }
-
 /**
  * Store data in cache with automatic expiration
  * 
@@ -45,7 +41,6 @@ async get(key, fetchFn, ttl = 5 * 60 * 1000) {
 set(key, data, ttl) {
     // Store data in cache
     this.data.set(key, data);
-    
     // Clear any existing timeout for this key
     if (this.timeouts.has(key)) {
     clearTimeout(this.timeouts.get(key));

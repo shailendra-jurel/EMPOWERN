@@ -1,11 +1,5 @@
 // // src/utils/api/errors.js
 
-// /**
-//  * Custom API Error Class
-//  * 
-//  * Extends the standard Error class to provide more detailed 
-//  * information about API-related errors.
-//  */
 // export class ApiError extends Error {
 //     /**
 //      * Constructor for creating a custom API error
