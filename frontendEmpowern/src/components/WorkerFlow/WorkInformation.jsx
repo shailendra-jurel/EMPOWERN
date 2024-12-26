@@ -4,7 +4,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { Typography,Button,Card,Space,Row,Col,Spin,Alert,Descriptions,Tag,Modal,Tooltip } from 'antd';
 import { FiMapPin,    FiCalendar,    FiDollarSign,    FiUser,    FiPhone,  FiHome } from 'react-icons/fi';
 
-import { getJobById, applyForJob } from '../../calls/jobCalls';
+import { jobService } from '../../calls/jobCalls';
 import { setSelectedJob } from '../../store/appSlice';
 
 const { Title, Text, Paragraph } = Typography;
@@ -28,7 +28,7 @@ const WorkInformation = () => {
             
             try {
                 setLoading(true);
-                const job = await getJobById(projectId);
+                const job = await jobService.getJobById(projectId);
                 
                 // Robust data validation
                 if (!job) {
@@ -52,7 +52,7 @@ const WorkInformation = () => {
     const handleApplyClick = async () => {
         try {
             setApplying(true);
-            await applyForJob(projectId);
+            await jobService.applyForJob(projectId);
             setModalVisible(true);
         } catch (error) {
             Modal.error({

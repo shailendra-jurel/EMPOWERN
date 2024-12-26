@@ -31,13 +31,7 @@ async get(key, fetchFn, ttl = 5 * 60 * 1000) {
     this.set(key, data, ttl);
     return data;
 }
-/**
- * Store data in cache with automatic expiration
- * 
- * @param {string} key - Unique cache key
- * @param {*} data - Data to cache
- * @param {number} ttl - Time to live in milliseconds
- */
+
 set(key, data, ttl) {
     // Store data in cache
     this.data.set(key, data);
@@ -53,3 +47,18 @@ set(key, data, ttl) {
     }, ttl));
 }
 }
+
+/*
+*  cache.js is used to store the  api response in the cache memory for a certain time period.
+*  It has two main functions get and set.
+*  get function is used to get the data from the cache memory if it is already present in the memory.
+*  If the data is not present in the cache memory then it fetches the data from the api and stores it in the cache memory.
+*  set function is used to store the data in the cache memory with a certain time period.
+*  It also has a timeout function which removes the cache entry after the time period is over.
+*  The cache memory is stored in the form of a map.
+*  The cache memory is cleared after the time period is over.
+*  The cache memory is used to store the api response to reduce the time taken to fetch the data from the api.
+*  It is used to store the data temporarily in the memory
+
+
+*/

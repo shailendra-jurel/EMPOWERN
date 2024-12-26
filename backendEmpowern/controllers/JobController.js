@@ -1,7 +1,7 @@
 // controllers/JobController.js
-const Job = require('../models/Jobs');
+import Job from '../models/Jobs.js';
 
-exports.createJob = async (req, res) => {
+const createJob = async (req, res) => {
     try {
         const newJob = new Job(req.body);
         await newJob.save();
@@ -11,7 +11,7 @@ exports.createJob = async (req, res) => {
     }
 };
 
-exports.getAllJobs = async (req, res) => {
+const getAllJobs = async (req, res) => {
     try {
         const jobs = await Job.find().populate('postedBy');
         res.json(jobs);
@@ -20,7 +20,7 @@ exports.getAllJobs = async (req, res) => {
     }
 };
 
-exports.getJobById = async (req, res) => {
+const getJobById = async (req, res) => {
     try {
         const job = await Job.findById(req.params.id).populate({
             path: 'postedBy',
@@ -35,12 +35,16 @@ exports.getJobById = async (req, res) => {
             res.status(404).json({ message: 'Job not found' });
         }
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        console.error('Error fetching job:', error);
+        res.status(500).json({ 
+            message: 'Error fetching job details',
+            error: error.message 
+        });
     }
 };
 
 
-exports.updateJob = async (req, res) => {
+const updateJob = async (req, res) => {
     console.log('reached server for updating the job')
     console.log('req.params:', req.params);
     console.log('req.body:', req.body);
@@ -59,7 +63,7 @@ exports.updateJob = async (req, res) => {
 };
 
 
-exports.deleteJob = async (req, res) => {
+const deleteJob = async (req, res) => {
     try {
         await Job.findByIdAndDelete(req.params.id);
         res.json({ message: 'Job deleted successfully' });
@@ -68,7 +72,7 @@ exports.deleteJob = async (req, res) => {
     }
 };
 
-exports.getJobByPostedById = async (req, res) => {
+const getJobByPostedById = async (req, res) => {
     try {
         const jobs = await Job.find({ postedBy: req.params.id }).populate('postedBy');
         res.json(jobs);
@@ -76,5 +80,7 @@ exports.getJobByPostedById = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
+
+export default { createJob, getAllJobs, getJobById, updateJob, deleteJob, getJobByPostedById };
 
 

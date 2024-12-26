@@ -1,467 +1,237 @@
-// src/calls/jobCalls.js
+// src/calls/jobService.js
 import { axiosInstance } from './axiosInstance';
 import { BaseApiService } from './baseApiService';
 import { apiHelpers } from '../utilities/api/helpers';
 
 /**
- * Job Service
- * 
- * Extends BaseApiService with job-specific methods
- * Provides specialized API interactions for job-related operations
+ * Configuration for Job API
+ */
+const JOB_API_CONFIG = {
+endpoints: {
+base: '/api/jobs',
+getAll: '/',//previously it was '/getAllJobs'
+getById: '/getById', 
+create: '/',  //previously it was '/create'
+update: '/:id',  //previously it was '/update'
+apply: '/apply',
+search: '/search',
+postedBy: '/posted-by'
+},
+cache: {
+ttl: 5 * 60 * 1000, // 5 minutes
+enabled: true
+}
+};
+
+/**
+ * Enhanced Job Service class extending BaseApiService
+ * Provides comprehensive job-related API operations with caching and error handling
  */
 class JobService extends BaseApiService {
-/**
- * Constructor
- * Initializes the JobService with the jobs endpoint
- */
 constructor() {
-// Call parent constructor with Axios instance and jobs endpoint
-super(axiosInstance, '/jobs');
+super(axiosInstance, JOB_API_CONFIG.endpoints.base);
+this.config = JOB_API_CONFIG;
 }
 
 /**
- * Retrieve jobs posted by a specific user
- * 
- * @param {string} postedById - Unique identifier of the user who posted the jobs
- * @returns {Promise} Array of jobs posted by the user
+ * Fetch all jobs with optional caching
+ * @param {boolean} useCache - Whether to use cache
+ * @returns {Promise<Array>} List of jobs
  */
-async getJobById(id) {
+
+async getJobs(useCache = this.config.cache.enabled) {
+    try {
+        console.log('Fetching all jobs...');
+        const cacheKey = this.config.endpoints.getAll;
+        const url = `${this.endpoint}${this.config.endpoints.getAll}`;
+
+        if (useCache) {
+            return await this.cache.get(
+                cacheKey,
+                async () => {
+                    // Use axios to fetch from combined endpoint
+                    const response = await this.axios.get(url);
+                    return response.data;
+                },
+                this.config.cache.ttl
+            );
+        }
+
+        // Use apiHelpers.withRetry to retry on failure
+        const response = await apiHelpers.withRetry(() => this.axios.get(url));
+        if (!response.data) {
+            throw new Error('No data received from server (jobCalls)');
+        }
+        return response.data;
+    } catch (error) {
+        return apiHelpers.handleError(error, 'fetch all jobs');
+    }
+}
+
+/**
+ * Get job by ID with optional caching
+ * @param {string} id - Job ID
+ * @param {boolean} useCache - Whether to use cache
+ * @returns {Promise<Object>} Job details
+ */
+async getJobById(id, useCache = this.config.cache.enabled) {
+if (!id) throw new Error('Job ID is required');
+
 try {
-    // Make API call to fetch jobs by posted ID
-    const response = await this.axios.get(`${this.endpoint}/getById/${id}`);
+    const cacheKey = `${this.config.endpoints.getById}/${id}`;
+    if (useCache) {
+    return await this.cache.get(
+        cacheKey,
+        async () => {
+            const response = await this.axios.get(`${this.endpoint}${this.config.endpoints.getById}/${id}`);
+            return response.data;
+        },
+        this.config.cache.ttl
+    );
+    }
+
+    const response = await apiHelpers.withRetry(() =>
+    this.axios.get(`${this.config.endpoints.getById}/${id}`)
+    );
     return response.data;
 } catch (error) {
-    // Use centralized error handling
-    apiHelpers.handleError(error, 'get jobs by  ID');
-    throw error;
+    return apiHelpers.handleError(error, 'get job by ID');
 }
 }
 
-async getJobs() {
-    try {
-        console.log('Fetching jobs...'); // Debug log
-        const response = await this.axios.get(`${this.endpoint}/getAllJobs`);
-        console.log('Jobs response:', response.data); // Debug log
-        return response.data;
-    } catch (error) {
-        // apiHelpers.handleError(error, 'get all jobs');
-        console.error('Error fetching jobs:', error);
-        throw error;
-    }
+/**
+ * Get jobs posted by a specific user
+ * @param {string} userId - User ID
+ * @returns {Promise<Array>} List of jobs
+ */
+async getJobsByPostedById(userId) {
+if (!userId) throw new Error('User ID is required');
+
+try {
+    const response = await apiHelpers.withRetry(() =>
+    this.axios.get(`${this.config.endpoints.postedBy}/${userId}`)
+    );
+    return response.data;
+} catch (error) {
+    return apiHelpers.handleError(error, 'get jobs by posted ID');
+}
 }
 
-// You can add more job-specific methods here as needed
-
-
- async applyForJob(jobId, data) {
-    try {
-        const response = await this.axios.put(`${this.endpoint}/${jobId}`, data);
-        return response.data;
-    } catch (error) {
-        console.error('Error updating job:', error);
-        throw error;
-    }
+/**
+ * Create a new job
+ * @param {Object} jobData - Job details
+ * @returns {Promise<Object>} Created job
+ */
+async createJob(jobData) {
+try {
+    await this.validateJobData(jobData);
+    const response = await apiHelpers.withRetry(() =>
+    this.axios.post(this.config.endpoints.create, jobData)
+    );
+    await this.invalidateJobCache();
+    return response.data;
+} catch (error) {
+    return apiHelpers.handleError(error, 'create job');
+}
 }
 
+/**
+ * Update an existing job
+ * @param {string} id - Job ID
+ * @param {Object} jobData - Updated job details
+ * @returns {Promise<Object>} Updated job
+ */
+async updateJob(id, jobData) {
+if (!id) throw new Error('Job ID is required');
 
+try {
+    await this.validateJobData(jobData);
+    const response = await apiHelpers.withRetry(() =>
+    this.axios.put(`${this.config.endpoints.update}/${id}`, jobData)
+    );
+    await this.invalidateJobCache(id);
+    return response.data;
+} catch (error) {
+    return apiHelpers.handleError(error, 'update job');
+}
 }
 
+/**
+ * Apply for a job
+ * @param {string} jobId - Job ID
+ * @param {Object} applicationData - Application details
+ * @returns {Promise<Object>} Application result
+ */
+async applyForJob(jobId, applicationData = { status: 'Applied' }) {
+if (!jobId) throw new Error('Job ID is required');
 
-// Export a singleton instance of JobService
+try {
+    const response = await apiHelpers.withRetry(() =>
+    this.axios.post(`${this.config.endpoints.apply}/${jobId}`, applicationData)
+    );
+    await this.invalidateJobCache(jobId);
+    return response.data;
+} catch (error) {
+    return apiHelpers.handleError(error, 'apply for job');
+}
+}
+
+/**
+ * Search jobs with filters
+ * @param {Object} filters - Search filters
+ * @returns {Promise<Array>} Filtered jobs
+ */
+async searchJobs(filters = {}) {
+try {
+    const response = await apiHelpers.withRetry(() =>
+    this.axios.get(this.config.endpoints.search, { params: filters })
+    );
+    return response.data;
+} catch (error) {
+    return apiHelpers.handleError(error, 'search jobs');
+}
+}
+
+/**
+ * Validate job data
+ * @private
+ * @param {Object} jobData - Job data to validate
+ */
+async validateJobData(jobData) {
+const requiredFields = ['title', 'description', 'location'];
+const missingFields = requiredFields.filter(field => !jobData[field]);
+
+if (missingFields.length > 0) {
+    throw new Error(`Missing required fields: ${missingFields.join(', ')}`);
+}
+}
+
+/**
+ * Invalidate job cache
+ * @private
+ * @param {string} [jobId] - Specific job ID to invalidate
+ */
+async invalidateJobCache(jobId = null) {
+if (jobId) {
+    await this.cache.invalidate(`${this.config.endpoints.getById}/${jobId}`);
+}
+await this.cache.invalidate(this.config.endpoints.getAll);
+}
+}
+
+// Export singleton instance
 export const jobService = new JobService();
 
-
-// Export both the service and individual methods
-
-export const getJobs = () => jobService.getJobs();
-export const  getJobById = (id) => jobService.getJobById(id);
-export const applyForJob = (jobId) => jobService.applyForJob(jobId, { status: 'Applied' });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// // src/calls/jobCalls.js
-// import { axiosInstance } from "./axiosInstance";
-
-
-// //   Custom error class for job-related API errors
-
-// class JobApiError extends Error {
-//   constructor(message, statusCode, originalError) {
-//     super(message);
-//     this.name = 'JobApiError';
-//     this.statusCode = statusCode;
-//     this.originalError = originalError;
-//   }
-// }
-
-// /**
-//  * Configuration for API calls
-//  */
-// const API_CONFIG = {
-//   RETRY_ATTEMPTS: 3,
-//   RETRY_DELAY: 1000, // milliseconds
-//   ENDPOINTS: {
-//     GET_ALL: '/jobs/getAllJobs',
-//     GET_BY_POSTED_ID: '/jobs/posted-by',
-//     CREATE: '/jobs/create',
-//     UPDATE: '/jobs/update',
-//     DELETE: '/jobs'
-//   }
-// };
-
-// /**
-//  * Helper function to handle API errors
-//  * @param {Error} error - The caught error
-//  * @param {string} operation - The operation being performed
-//  * @throws {JobApiError}
-//  */
-// const handleApiError = (error, operation) => {
-//   const statusCode = error.response?.status || 500;
-//   const errorMessage = error.response?.data?.message || error.message;
-
-//   console.error(`Job API Error [${operation}]:`, {
-//     statusCode,
-//     message: errorMessage,
-//     details: error.response?.data || error,
-//     timestamp: new Date().toISOString()
-//   });
-
-//   throw new JobApiError(
-//     `Failed to ${operation}: ${errorMessage}`,
-//     statusCode,
-//     error
-//   );
-// };
-
-// /**
-//  * Retry mechanism for failed API calls
-//  * @param {Function} apiCall - The API call to retry
-//  * @param {number} maxAttempts - Maximum number of retry attempts
-//  * @returns {Promise}
-//  */
-// const withRetry = async (apiCall, maxAttempts = API_CONFIG.RETRY_ATTEMPTS) => {
-//   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-//     try {
-//       return await apiCall();
-//     } catch (error) {
-//       if (attempt === maxAttempts) throw error;
-//       await new Promise(resolve => 
-//         setTimeout(resolve, API_CONFIG.RETRY_DELAY * attempt)
-//       );
-//       console.warn(`Retrying API call, attempt ${attempt + 1}/${maxAttempts}`);
-//     }
-//   }
-// };
-
-// /**
-//  * Validates job data before API calls
-//  * @param {Object} jobData - The job data to validate
-//  * @throws {Error}
-//  */
-// const validateJobData = (jobData) => {
-//   const requiredFields = ['title', 'description', 'location'];
-//   const missingFields = requiredFields.filter(field => !jobData[field]);
-
-//   if (missingFields.length > 0) {
-//     throw new Error(`Missing required fields: ${missingFields.join(', ')}`);
-//   }
-// };
-
-// /**
-//  * Fetches all jobs
-//  * @returns {Promise<Array>} Array of jobs
-//  */
-// export const getJobs = async () => {
-//   try {
-//     const response = await withRetry(() => 
-//       axiosInstance.get(API_CONFIG.ENDPOINTS.GET_ALL)
-//     );
-//     return response.data;
-//   } catch (error) {
-//     handleApiError(error, 'fetch all jobs');
-//   }
-// };
-
-// /**
-//  * Fetches jobs by posted ID
-//  * @param {string} postedById - ID of the user who posted the jobs
-//  * @returns {Promise<Array>} Array of jobs
-//  */
-// export const getJobsByPostedById = async (postedById) => {
-//   if (!postedById) throw new Error('Posted ID is required');
-
-//   try {
-//     const response = await withRetry(() => 
-//       axiosInstance.get(`${API_CONFIG.ENDPOINTS.GET_BY_POSTED_ID}/${postedById}`)
-//     );
-//     return response.data;
-//   } catch (error) {
-//     handleApiError(error, 'fetch jobs by posted ID');
-//   }
-// };
-
-// /**
-//  * Creates a new job
-//  * @param {Object} jobData - The job data
-//  * @returns {Promise<Object>} Created job
-//  */
-// export const createJob = async (jobData) => {
-//   try {
-//     validateJobData(jobData);
-
-//     const response = await withRetry(() => 
-//       axiosInstance.post(API_CONFIG.ENDPOINTS.CREATE, jobData)
-//     );
-
-//     console.log('Job created successfully:', response.data);
-//     return response.data;
-//   } catch (error) {
-//     handleApiError(error, 'create job');
-//   }
-// };
-
-// /**
-//  * Updates an existing job
-//  * @param {string} jobId - ID of the job to update
-//  * @param {Object} jobData - Updated job data
-//  * @returns {Promise<Object>} Updated job
-//  */
-// export const updateJob = async (jobId, jobData) => {
-//   if (!jobId) throw new Error('Job ID is required');
-
-//   try {
-//     validateJobData(jobData);
-
-//     const response = await withRetry(() => 
-//       axiosInstance.put(`${API_CONFIG.ENDPOINTS.UPDATE}/${jobId}`, jobData)
-//     );
-
-//     console.log('Job updated successfully:', response.data);
-//     return response.data;
-//   } catch (error) {
-//     handleApiError(error, 'update job');
-//   }
-// };
-
-// /**
-//  * Deletes a job
-//  * @param {string} jobId - ID of the job to delete
-//  * @returns {Promise<Object>} Deletion confirmation
-//  */
-// export const deleteJob = async (jobId) => {
-//   if (!jobId) throw new Error('Job ID is required');
-
-//   try {
-//     const response = await withRetry(() => 
-//       axiosInstance.delete(`${API_CONFIG.ENDPOINTS.DELETE}/${jobId}`)
-//     );
-
-//     console.log('Job deleted successfully:', jobId);
-//     return response.data;
-//   } catch (error) {
-//     handleApiError(error, 'delete job');
-//   }
-// };
-
-// /**
-//  * Batch operations for jobs
-//  */
-// export const jobBatchOperations = {
-//   /**
-//    * Creates multiple jobs
-//    * @param {Array<Object>} jobs - Array of job data
-//    * @returns {Promise<Array>} Created jobs
-//    */
-//   createMany: async (jobs) => {
-//     try {
-//       const createdJobs = await Promise.all(
-//         jobs.map(job => createJob(job))
-//       );
-//       return createdJobs.filter(Boolean);
-//     } catch (error) {
-//       handleApiError(error, 'batch create jobs');
-//     }
-//   },
-
-//   /**
-//    * Updates multiple jobs
-//    * @param {Array<{id: string, data: Object}>} updates - Array of job updates
-//    * @returns {Promise<Array>} Updated jobs
-//    */
-//   updateMany: async (updates) => {
-//     try {
-//       const updatedJobs = await Promise.all(
-//         updates.map(({ id, data }) => updateJob(id, data))
-//       );
-//       return updatedJobs.filter(Boolean);
-//     } catch (error) {
-//       handleApiError(error, 'batch update jobs');
-//     }
-//   }
-// };
-
-// // Cache mechanism for frequently accessed data
-// const jobCache = {
-//   data: new Map(),
-//   timeouts: new Map(),
-
-//   /**
-//    * Gets cached data or fetches it
-//    * @param {string} key - Cache key
-//    * @param {Function} fetchFn - Function to fetch data
-//    * @param {number} ttl - Time to live in milliseconds
-//    */
-//   async get(key, fetchFn, ttl = 5 * 60 * 1000) {
-//     if (this.data.has(key)) {
-//       return this.data.get(key);
-//     }
-
-//     const data = await fetchFn();
-//     this.set(key, data, ttl);
-//     return data;
-//   },
-
-//   /**
-//    * Sets cached data with TTL
-//    */
-//   set(key, data, ttl) {
-//     this.data.set(key, data);
-
-//     if (this.timeouts.has(key)) {
-//       clearTimeout(this.timeouts.get(key));
-//     }
-
-//     this.timeouts.set(key, setTimeout(() => {
-//       this.data.delete(key);
-//       this.timeouts.delete(key);
-//     }, ttl));
-//   }
-// };
-
-// // Export cache for external use if needed
-// export { jobCache };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// // // src/calls/jobCalls.js
-// // import { axiosInstance } from "./axiosInstance";
-
-// // export const getJobs = async () => {
-// //     try {
-// //         const response = await axiosInstance.get('/jobs/getAllJobs');
-// //         return response.data;
-// //     } catch (error) {
-// //         console.error('Error fetching jobs:', error);
-// //         return [];
-// //     }
-// // }
-
-
-// // //I have an confusion about my code  is  getJobById and getJobsByPostedById are same or not
-// // export const getJobById = async (postedById) => {
-// //     try {
-// //         const response = await axiosInstance.get(`/jobs/posted-by/${postedById}`);
-// //         return response.data;
-// //     } catch (error) {
-// //         console.error('Error fetching jobs by postedBy:', error);
-// //         return [];
-// //     }
-// // }
-
-// // export const createJob = async (job) => {
-// //     try {
-// //         const response = await axiosInstance.post('/jobs/create', job);
-// //         return response.data;
-// //     } catch (error) {
-// //         console.error('Error creating job:', error);
-// //         return null;
-// //     }
-// // }
-
-// // export const updateJob = async (jobId, job) => {
-// //     console.log('jobId:', jobId);
-// //     console.log('job data:', job);
-// //     try {
-// //         const response = await axiosInstance.put(`/jobs/update/${jobId}`, job);
-// //         return response.data;
-// //     } catch (error) {
-// //         console.error('Error updating job:', error.response ? error.response.data : error.message);
-// //         return null;
-// //     }
-// // }
-
-// // export const deleteJob = async (jobId) => {
-// //     try {
-// //         const response = await axiosInstance.delete(`/jobs/${jobId}`);
-// //         return response.data;
-// //     } catch (error) {
-// //         console.error('Error deleting job:', error);
-// //         return null;
-// //     }
-// // }
+// Export individual methods for convenience
+export const {
+getJobs,
+getJobById,
+getJobsByPostedById,
+createJob,
+updateJob,
+applyForJob,
+searchJobs
+} = jobService;
+
+// Export service for advanced usage
+export default JobService;

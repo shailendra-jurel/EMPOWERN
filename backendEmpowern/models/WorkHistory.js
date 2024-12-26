@@ -1,6 +1,6 @@
 // models/WorkHistory.js
 
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 const Schema = mongoose.Schema;
 
 const workHistorySchema = new Schema({
@@ -10,4 +10,4 @@ const workHistorySchema = new Schema({
 
 const WorkHistory = mongoose.model('WorkHistory', workHistorySchema);
 
-module.exports = WorkHistory;
+export default  WorkHistory;

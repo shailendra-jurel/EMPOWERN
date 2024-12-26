@@ -1,6 +1,6 @@
 // models/Contractor.js
 
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 const Schema = mongoose.Schema;
 
 const contractorSchema = new Schema({
@@ -11,4 +11,4 @@ const contractorSchema = new Schema({
 
 const Contractor = mongoose.model('Contractor', contractorSchema);
 
-module.exports = Contractor;
+export default  Contractor;

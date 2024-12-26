@@ -67,6 +67,8 @@ try {
     return response.data;
 } catch (error) {
     apiHelpers.handleError(error, `delete ${this.endpoint}`);
+
+
 }
 }
 }

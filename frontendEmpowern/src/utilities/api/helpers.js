@@ -1,18 +1,16 @@
 // src/utils/api/helpers.js
 import { API_CONFIG } from './config';
 import { ApiError } from './errors';
-
 /**
  * API Helper Utilities
  * 
  * Provides common utility functions for API interactions
  * including error handling and retry mechanisms
  */
-export const apiHelpers = {
+export  const  apiHelpers = {
 /**
  * Centralized error handling method
  * Logs detailed error information and throws a custom ApiError
- * 
  * @param {Error} error - The caught error
  * @param {string} operation - Description of the operation that failed
  * @throws {ApiError}
@@ -31,7 +29,6 @@ console.error(`API Error [${operation}]:`, {
     details: error.response?.data || error,
     timestamp: new Date().toISOString()
 });
-
 // Throw a custom ApiError with detailed information
 throw new ApiError(
     `Failed to ${operation}: ${errorMessage}`,
@@ -39,7 +36,6 @@ throw new ApiError(
     error
 );
 },
-
 /**
  * Retry mechanism for API calls
  * Automatically retries failed API calls with exponential backoff

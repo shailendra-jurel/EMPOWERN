@@ -1,8 +1,9 @@
-const User = require('../models/User');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
 
-exports.createUser = async (req, res) => {
+import User from '../models/User.js';
+// const bcrypt = require('bcryptjs');
+// const jwt = require('jsonwebtoken');
+
+const createUser = async (req, res) => {
     console.log('req.body', req.body);
     console.log('user called for creating')
     try {
@@ -17,7 +18,7 @@ exports.createUser = async (req, res) => {
     }
 };
 
-exports.getAllUsers = async (req, res) => {
+const getAllUsers = async (req, res) => {
     try {
         const users = await User.find();
         res.json(users);
@@ -26,7 +27,7 @@ exports.getAllUsers = async (req, res) => {
     }
 };
 
-exports.getUserById = async (req, res) => {
+const getUserById = async (req, res) => {
     try {
         const user = await User.findById(req.params.id);
         if (user) {
@@ -39,7 +40,7 @@ exports.getUserById = async (req, res) => {
     }
 };
 
-exports.getUserByNumber = async(req, res) => {
+const getUserByNumber = async(req, res) => {
     try {
         const user = await User.findOne({ mobileNumber: req.params.mobileNumber });
         if (user) {
@@ -53,7 +54,7 @@ exports.getUserByNumber = async(req, res) => {
     }
 };
 
-exports.updateUser = async (req, res) => {
+const updateUser = async (req, res) => {
     console.log('req.body', req.body);
     console.log('user called for updating')
     try {
@@ -64,11 +65,21 @@ exports.updateUser = async (req, res) => {
     }
 };
 
-exports.deleteUser = async (req, res) => {
+const deleteUser = async (req, res) => {
     try {
         await User.findByIdAndDelete(req.params.id);
         res.json({ message: 'User deleted successfully' });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
+};
+
+
+export default {
+    createUser,
+    getAllUsers,
+    getUserById,
+    getUserByNumber,
+    updateUser,
+    deleteUser
 };

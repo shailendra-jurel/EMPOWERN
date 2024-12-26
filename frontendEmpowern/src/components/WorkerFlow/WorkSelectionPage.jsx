@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button, Typography, Card, Row, Col, Space, Select, Spin, Alert } from 'antd';
 import { useNavigate } from 'react-router-dom';
-import { getJobs } from '../../calls/jobCalls';
+import { jobService } from '../../calls/jobCalls';;
 import {useSelector , useDispatch}  from 'react-redux';
 import { setProjectId } from '../../store/appSlice';
 
@@ -20,19 +20,36 @@ const WorkSelectionPage = () => {
 const navigate = useNavigate();
 
 useEffect(() => {
-const fetchAvailableWorks = async () => {
-    try {
-    const jobs = await getJobs();
-    const openJobs = jobs.filter(job => job.status === 'Open');
-    setAvailableWorks(openJobs);
-    setFilteredWorks(openJobs);
-    } catch (err) {
-    setError('Failed to load available works. Please try again later.');
-    } finally {
-    setLoading(false);
-    }
-};
-fetchAvailableWorks();
+    const fetchAvailableWorks = async () => {
+      try {
+        setLoading(true);
+        const response = await jobService.getJobs();
+        
+        // Add debug logs
+        console.log('raw API Response:', response);
+        
+        if (!response ) {
+          throw new Error('No response from server  or  Invalid Api response');
+        }
+        
+        // Filter open jobs if response is an array
+        const openJobs = Array.isArray(response) 
+          ? response.filter(job => job.status === 'Open')
+          : [];
+          
+        console.log('Filtered open jobs:', openJobs.length);
+        
+        setAvailableWorks(openJobs);
+        setFilteredWorks(openJobs);
+      } catch (err) {
+        console.error('Error fetching jobs:', err);
+        setError('Failed to load available works. Please try again later.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAvailableWorks();
 }, []);
 
 const handleJobClick = (jobId) => {

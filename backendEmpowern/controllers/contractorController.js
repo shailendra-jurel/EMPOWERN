@@ -1,7 +1,6 @@
 // controllers/contractorController.js
-const Contractor = require('../models/Contractor');
-
-exports.createContractor = async (req, res) => {
+import Contractor from '../models/Contractor.js';
+const createContractor = async (req, res) => {
     try {
         const contractor = new Contractor(req.body);
         await contractor.save();
@@ -11,7 +10,7 @@ exports.createContractor = async (req, res) => {
     }
 };
 
-exports.getAllContractors = async (req, res) => {
+const getAllContractors = async (req, res) => {
     try {
         const contractors = await Contractor.find();
         res.status(200).json(contractors);
@@ -20,7 +19,7 @@ exports.getAllContractors = async (req, res) => {
     }
 };
 
-exports.getContractorById = async (req, res) => {
+const getContractorById = async (req, res) => {
     console.log('Fetching contractor with id:', req.params.id);
     console.log('reached here for the contractor id')
     try {
@@ -36,7 +35,7 @@ exports.getContractorById = async (req, res) => {
     }
 };
 
-exports.updateContractor = async (req, res) => {
+const updateContractor = async (req, res) => {
     try {
         const contractor = await Contractor.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
         if (!contractor) {
@@ -49,7 +48,7 @@ exports.updateContractor = async (req, res) => {
     }
 };
 
-exports.deleteContractor = async (req, res) => {
+const deleteContractor = async (req, res) => {
     try {
         const contractor = await Contractor.findByIdAndDelete(req.params.id);
         if (!contractor) {
@@ -63,7 +62,7 @@ exports.deleteContractor = async (req, res) => {
 };
 
 
-exports.getContractorByUserId = async (req, res) => {
+const getContractorByUserId = async (req, res) => {
     try {
         const userId = req.query.userId; // Get userId from query parameters
         console.log('Fetching contractor with userId:', userId);
@@ -77,3 +76,5 @@ exports.getContractorByUserId = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
+
+export  default { createContractor, getAllContractors, getContractorById, updateContractor, deleteContractor, getContractorByUserId };

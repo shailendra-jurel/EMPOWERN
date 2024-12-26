@@ -1,7 +1,7 @@
 // controllers/SkillsController.js
-const Skills = require('../models/Skills');
 
-exports.createSkill = async (req, res) => {
+import Skills from '../models/Skills.js';
+const createSkill = async (req, res) => {
     try {
         const newSkill = new Skills(req.body);
         await newSkill.save();
@@ -11,7 +11,7 @@ exports.createSkill = async (req, res) => {
     }
 };
 
-exports.getAllSkills = async (req, res) => {
+const getAllSkills = async (req, res) => {
     try {
         const skills = await Skills.find().populate('workerId');
         res.json(skills);
@@ -20,7 +20,7 @@ exports.getAllSkills = async (req, res) => {
     }
 };
 
-exports.getSkillById = async (req, res) => {
+const getSkillById = async (req, res) => {
     try {
         const skill = await Skills.findById(req.params.id).populate('workerId');
         if (skill) {
@@ -33,7 +33,7 @@ exports.getSkillById = async (req, res) => {
     }
 };
 
-exports.updateSkill = async (req, res) => {
+const updateSkill = async (req, res) => {
     try {
         const updatedSkill = await Skills.findByIdAndUpdate(req.params.id, req.body, { new: true });
         res.json(updatedSkill);
@@ -42,7 +42,7 @@ exports.updateSkill = async (req, res) => {
     }
 };
 
-exports.deleteSkill = async (req, res) => {
+const deleteSkill = async (req, res) => {
     try {
         await Skills.findByIdAndDelete(req.params.id);
         res.json({ message: 'Skill deleted successfully' });
@@ -50,3 +50,14 @@ exports.deleteSkill = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
+
+const getSkillsByEmployeeId = async (req, res) => {
+    try {
+        const skills = await Skills.find({ workerId: req.params.employeeId }).populate('workerId');
+        res.json(skills);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+export default { createSkill, getAllSkills, getSkillById, updateSkill, deleteSkill, getSkillsByEmployeeId };

@@ -3,8 +3,7 @@
   // API Configuration Module provides centralized configuration for different  environment settings, retry mechanisms, and API endpoints.
 export const API_CONFIG = {
     /**
-     * Environment-specific API configurations
-     * Allows seamless switching between different backend environments
+     * Environment-specific API configurations Allows seamless switching between different backend environments
      */
     ENVIRONMENTS: {
       // Development environment configuration

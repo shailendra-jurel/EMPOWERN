@@ -1,7 +1,5 @@
-// scripts/generateFakeJobs.js
-const mongoose = require('mongoose');
-const { faker } = require('@faker-js/faker');
-const Job = require('../models/Job');
+import mongoose from 'mongoose';
+import { faker } from '@faker-js/faker';
 
 const generateFakeJobs = async (count = 20) => {
     const jobs = [];
@@ -20,11 +18,11 @@ const generateFakeJobs = async (count = 20) => {
             payRate: faker.number.int({ min: 500, max: 2000 }),
             status: 'Open',
             description: faker.lorem.paragraph(),
-            requirements: [
-                faker.lorem.sentence(),
-                faker.lorem.sentence(),
-                faker.lorem.sentence()
-            ],
+            accomodation: faker.datatype.boolean(),
+            transportation: faker.datatype.boolean(),
+            workersRequired: faker.number.int({ min: 1, max: 10 }),
+            skillsRequired: faker.lorem.words(3),
+            postedBy: new mongoose.Types.ObjectId(),
             postedDate: faker.date.recent({ days: 30 })
         };
         jobs.push(job);
@@ -33,4 +31,4 @@ const generateFakeJobs = async (count = 20) => {
     return jobs;
 };
 
-module.exports = generateFakeJobs;
+export default generateFakeJobs;

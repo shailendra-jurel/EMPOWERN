@@ -27,8 +27,8 @@ import EmployeeDetails from './components/ContractorFlow/EmployeeDetails'
 import ProjectApplications  from './components/ContractorFlow/ProjectDetails'
 import ProjectDetails  from './components/ContractorFlow/ProjectDetails'
 import ProjectList  from './components/ContractorFlow/ProjectList'
-// import  AddProjectStep2  from './components/ContractorFlow/AddProjectStep2'
-// import AddProjectStep3  from './components/ContractorFlow/AddProjectStep3'
+import  AddProjectStep2  from './components/ContractorFlow/AddProjectStep2'
+import AddProjectStep3  from './components/ContractorFlow/AddProjectStep3'
 
 
 
@@ -57,8 +57,8 @@ function App(){
 
 
       {/* Contractor Workflow  */}
-          {/* <Route path="/contractor/add-project-step2" element={<AddProjectStep2 />} /> */}
-        {/* <Route path="/contractor/add-project-step3" element={<AddProjectStep3 />} /> */}
+          <Route path="/contractor/add-project-step2" element={<AddProjectStep2 />} />
+        <Route path="/contractor/add-project-step3" element={<AddProjectStep3 />} />
         <Route path="/contractor/employee-details" element={<EmployeeDetails />} />
         <Route path="/contractor/project-applications" element={<ProjectApplications />} />
         <Route path="/contractor/project-details" element={<ProjectDetails />} />

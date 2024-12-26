@@ -1,7 +1,6 @@
 // import Ratings from '../models/Ratings';
-const Ratings = require('../models/Ratings');   
-
-exports.createRating = async (req, res) => {
+import Ratings from '../models/Ratings.js';
+const createRating = async (req, res) => {
     try {
         const newRating = new Ratings(req.body);
         await newRating.save();
@@ -11,7 +10,7 @@ exports.createRating = async (req, res) => {
     }
 };
 
-exports.getAllRatings = async (req, res) => {
+const getAllRatings = async (req, res) => {
     try {
         const ratings = await Ratings.find().populate('ratedBy').populate('targetId');
         res.json(ratings);
@@ -20,7 +19,7 @@ exports.getAllRatings = async (req, res) => {
     }
 };
 
-exports.getRatingById = async (req, res) => {
+const getRatingById = async (req, res) => {
     try {
         const rating = await Ratings.findById(req.params.id).populate('ratedBy').populate('targetId');
         if (rating) {
@@ -33,7 +32,7 @@ exports.getRatingById = async (req, res) => {
     }
 };
 
-exports.updateRating = async (req, res) => {
+const updateRating = async (req, res) => {
     try {
         const updatedRating = await Ratings.findByIdAndUpdate(req.params.id, req.body, { new: true });
         res.json(updatedRating);
@@ -42,7 +41,7 @@ exports.updateRating = async (req, res) => {
     }
 };
 
-exports.deleteRating = async (req, res) => {
+const deleteRating = async (req, res) => {
     try {
         await Ratings.findByIdAndDelete(req.params.id);
         res.json({ message: 'Rating deleted successfully' });
@@ -50,3 +49,6 @@ exports.deleteRating = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
+
+
+export default { createRating, getAllRatings, getRatingById, updateRating, deleteRating };

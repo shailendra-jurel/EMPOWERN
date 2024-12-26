@@ -1,25 +1,5 @@
-// // src/utils/api/errors.js
-
-// export class ApiError extends Error {
-//     /**
-//      * Constructor for creating a custom API error
-//      * 
-//      * @param {string} message - Human-readable error message
-//      * @param {number} statusCode - HTTP status code of the error
-//      * @param {Error} originalError - The original error object
-//      */
-//     constructor(message, statusCode, originalError) {
-//       super(message); // Call parent Error constructor
-//       this.name = 'ApiError'; // Custom error name
-//       this.statusCode = statusCode; // HTTP status code
-//       this.originalError = originalError; // Original error for debugging
-//     }
-//   }
-
-
 // utilities/api/error.js
 import { Logger } from '../logger';
-
 // Custom API error class
 export class ApiError extends Error {
   constructor(message, statusCode = 500, errors = []) {
@@ -32,7 +12,6 @@ export class ApiError extends Error {
     Error.captureStackTrace(this, this.constructor);
   }
 }
-
 // Error handling utility
 export const handleApiError = (error, req = null) => {
   // Determine error details
@@ -65,7 +44,7 @@ export const handleApiError = (error, req = null) => {
   return errorResponse;
 };
 
-// Error handling middleware for Express (if using Express)
+// Error handling middleware for Express
 export const errorMiddleware = (err, req, res, next) => {
   const error = handleApiError(err, req);
   
@@ -78,7 +57,6 @@ export const errorMiddleware = (err, req, res, next) => {
     })
   });
 };
-
 // Modify your existing API functions to use error handling
 export const safeApiCall = async (apiCall) => {
   try {

@@ -1,6 +1,5 @@
-const JobAssignment = require('../models/JobAssignment');
-
-exports.createJobAssignment = async (req, res) => {
+import JobAssignment from '../models/JobAssignment.js';
+const createJobAssignment = async (req, res) => {
     try {
         const jobAssignment = new JobAssignment(req.body);
         await jobAssignment.save();
@@ -10,7 +9,7 @@ exports.createJobAssignment = async (req, res) => {
     }
 };
 
-exports.getAllJobAssignments = async (req, res) => {
+const getAllJobAssignments = async (req, res) => {
     try {
         const jobAssignments = await JobAssignment.find()
             .populate({
@@ -36,7 +35,7 @@ exports.getAllJobAssignments = async (req, res) => {
     }
 };
 
-exports.getJobAssignmentById = async (req, res) => {
+const getJobAssignmentById = async (req, res) => {
     try {
         const jobAssignment = await JobAssignment.findById(req.params.id)
             .populate({
@@ -66,7 +65,7 @@ exports.getJobAssignmentById = async (req, res) => {
     }
 };
 
-exports.getJobAssignmentsByJobId = async (req, res) => {
+const getJobAssignmentsByJobId = async (req, res) => {
     console.log('Job ID received:', req.params.jobId); 
     try {
         const jobAssignments = await JobAssignment.find({ job: req.params.jobId })
@@ -99,7 +98,7 @@ exports.getJobAssignmentsByJobId = async (req, res) => {
     }
 };
 
-exports.updateJobAssignment = async (req, res) => {
+const updateJobAssignment = async (req, res) => {
     try {
         const jobAssignment = await JobAssignment.findByIdAndUpdate(req.params.id, req.body, { new: true });
         if (jobAssignment) {
@@ -112,7 +111,7 @@ exports.updateJobAssignment = async (req, res) => {
     }
 };
 
-exports.deleteJobAssignment = async (req, res) => {
+const deleteJobAssignment = async (req, res) => {
     try {
         const jobAssignment = await JobAssignment.findByIdAndDelete(req.params.id);
         if (jobAssignment) {
@@ -125,7 +124,7 @@ exports.deleteJobAssignment = async (req, res) => {
     }
 };
 
-exports.getJobAssignmentsByWorkerId = async (req, res) => {
+const getJobAssignmentsByWorkerId = async (req, res) => {
     console.log('Worker ID received:', req.params.workerId); // Log the workerId
     try {
         const jobAssignments = await JobAssignment.find({ worker: req.params.workerId })
@@ -157,3 +156,5 @@ exports.getJobAssignmentsByWorkerId = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
+
+export default { createJobAssignment, getAllJobAssignments, getJobAssignmentById, getJobAssignmentsByJobId, updateJobAssignment, deleteJobAssignment, getJobAssignmentsByWorkerId };

@@ -1,7 +1,7 @@
 // controllers/WorkHistoryController.js
-const WorkHistory = require('../models/WorkHistory');
+import WorkHistory from '../models/WorkHistory.js';
 
-exports.createWorkHistory = async (req, res) => {
+const createWorkHistory = async (req, res) => {
     try {
         const newHistory = new WorkHistory(req.body);
         await newHistory.save();
@@ -11,7 +11,7 @@ exports.createWorkHistory = async (req, res) => {
     }
 };
 
-exports.getAllWorkHistories = async (req, res) => {
+const getAllWorkHistories = async (req, res) => {
     try {
         const histories = await WorkHistory.find().populate('workerId');
         res.json(histories);
@@ -20,7 +20,7 @@ exports.getAllWorkHistories = async (req, res) => {
     }
 };
 
-exports.getWorkHistoryById = async (req, res) => {
+const getWorkHistoryById = async (req, res) => {
     try {
         const history = await WorkHistory.findById(req.params.id).populate('workerId');
         if (history) {
@@ -33,7 +33,7 @@ exports.getWorkHistoryById = async (req, res) => {
     }
 };
 
-exports.updateWorkHistory = async (req, res) => {
+const updateWorkHistory = async (req, res) => {
     try {
         const updatedHistory = await WorkHistory.findByIdAndUpdate(req.params.id, req.body, { new: true });
         res.json(updatedHistory);
@@ -42,7 +42,7 @@ exports.updateWorkHistory = async (req, res) => {
     }
 };
 
-exports.deleteWorkHistory = async (req, res) => {
+const deleteWorkHistory = async (req, res) => {
     try {
         await WorkHistory.findByIdAndDelete(req.params.id);
         res.json({ message: 'Work history deleted successfully' });
@@ -51,7 +51,7 @@ exports.deleteWorkHistory = async (req, res) => {
     }
 };
 
-exports.getWorkHistoryByEmployeeId = async (req, res) => {
+const getWorkHistoryByEmployeeId = async (req, res) => {
     try {
         const histories = await WorkHistory.find({ workerId: req.params.employeeId }).populate('workerId');
         res.json(histories);
@@ -59,3 +59,5 @@ exports.getWorkHistoryByEmployeeId = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 }
+
+export default { createWorkHistory, getAllWorkHistories, getWorkHistoryById, updateWorkHistory, deleteWorkHistory, getWorkHistoryByEmployeeId };

@@ -1,6 +1,6 @@
 // models/LabourWorker.js
 
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 const Schema = mongoose.Schema;
 
 const labourWorkerSchema = new Schema({
@@ -12,4 +12,4 @@ const labourWorkerSchema = new Schema({
 
 const LabourWorker = mongoose.model('LabourWorker', labourWorkerSchema);
 
-module.exports = LabourWorker;
+export default  LabourWorker;

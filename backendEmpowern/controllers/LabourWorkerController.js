@@ -1,6 +1,5 @@
-const LabourWorker = require('../models/LabourWorker');
-
-exports.createLabourWorker = async (req, res) => {
+import LabourWorker from '../models/LabourWorker.js';
+const createLabourWorker = async (req, res) => {
     try {
         const newLabourWorker = new LabourWorker(req.body);
         await newLabourWorker.save();
@@ -10,7 +9,7 @@ exports.createLabourWorker = async (req, res) => {
     }
 };
 
-exports.getAllLabourWorkers = async (req, res) => {
+const getAllLabourWorkers = async (req, res) => {
     try {
         const labourWorkers = await LabourWorker.find().populate('userId');
         res.json(labourWorkers);
@@ -19,7 +18,7 @@ exports.getAllLabourWorkers = async (req, res) => {
     }
 };
 
-exports.getLabourWorkerById = async (req, res) => {
+const getLabourWorkerById = async (req, res) => {
     try {
         const labourWorker = await LabourWorker.findById(req.params.id).populate('userId');
         if (labourWorker) {
@@ -32,7 +31,7 @@ exports.getLabourWorkerById = async (req, res) => {
     }
 };
 
-exports.updateLabourWorker = async (req, res) => {
+const updateLabourWorker = async (req, res) => {
     try {
         const updatedLabourWorker = await LabourWorker.findByIdAndUpdate(req.params.id, req.body, { new: true }).populate('userId');
         res.json(updatedLabourWorker);
@@ -41,7 +40,7 @@ exports.updateLabourWorker = async (req, res) => {
     }
 };
 
-exports.deleteLabourWorker = async (req, res) => {
+const deleteLabourWorker = async (req, res) => {
     try {
         await LabourWorker.findByIdAndDelete(req.params.id);
         res.json({ message: 'Labour worker deleted successfully' });
@@ -50,7 +49,7 @@ exports.deleteLabourWorker = async (req, res) => {
     }
 };
 
-exports.getLabourWorkerByUserId = async (req, res) => {
+const getLabourWorkerByUserId = async (req, res) => {
     console.log('this is the user id', req.params.userId);
     try {
         const labourWorker = await LabourWorker.findOne({ userId: req.params.userId }).populate('userId');
@@ -63,3 +62,5 @@ exports.getLabourWorkerByUserId = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
+
+export default { createLabourWorker, getAllLabourWorkers, getLabourWorkerById, updateLabourWorker, deleteLabourWorker, getLabourWorkerByUserId };

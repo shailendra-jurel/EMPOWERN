@@ -6,7 +6,6 @@ import { createBrowserHistory } from 'history';
 
 /**
  * Create Axios interceptors for advanced request and response handling
- * 
  * @param {Object} axiosInstance - Axios instance to add interceptors to
  */
 export const createInterceptors = (axiosInstance) => {
