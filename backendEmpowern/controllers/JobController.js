@@ -22,6 +22,7 @@ const getAllJobs = async (req, res) => {
 
 const getJobById = async (req, res) => {
     try {
+        console.log('Controller: Fetching job with ID:', req.params.id); // Debug log
         const job = await Job.findById(req.params.id).populate({
             path: 'postedBy',
             populate: {
@@ -29,20 +30,22 @@ const getJobById = async (req, res) => {
                 model: 'User'
             }
         });
-        if (job) {
-            res.json(job);
-        } else {
-            res.status(404).json({ message: 'Job not found' });
+        
+        if (!job) {
+            return res.status(404).json({ 
+                message: `Job with ID ${req.params.id} not found` 
+            });
         }
+        
+        res.json(job);
     } catch (error) {
-        console.error('Error fetching job:', error);
+        console.error('Error in getJobById:', error);
         res.status(500).json({ 
             message: 'Error fetching job details',
             error: error.message 
         });
     }
 };
-
 
 const updateJob = async (req, res) => {
     console.log('reached server for updating the job')
@@ -61,7 +64,6 @@ const updateJob = async (req, res) => {
         res.status(400).json({ message: error.message });
     }
 };
-
 
 const deleteJob = async (req, res) => {
     try {

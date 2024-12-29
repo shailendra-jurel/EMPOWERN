@@ -2,7 +2,7 @@ import {createSlice} from '@reduxjs/toolkit'
 
 const  initialState = {
 
-    userId : '',
+    userId : null,
     selectedQuipmentId : '',
     selectedJob : '',
     machineCategor : '',
@@ -10,10 +10,11 @@ const  initialState = {
     MachineOwnerId : '',
     BorrowerId: '',
     RenteeId : '',
-    contractorId :  '',
+    contractorId :  null,
     projectId : '',
     workerId : '',
-    jobAssignmentId : '' ,
+    jobAssignId : '' ,
+    error : null,
     
 }
 
@@ -60,6 +61,9 @@ const appSlice = createSlice({
             state.workerId = action.payload;
 
         },
+        setError : (state , action) => {
+            state.error = action.payload;
+        },
 
         setJobAssignId (state , action){
             state.jobAssignmentId = action.payload;
@@ -73,7 +77,7 @@ const appSlice = createSlice({
 export const {
     setUserId, setBorrowerId , setContractorId ,
     setJobAssignId  , setMachineCategory , setProjectId ,
-    setRenteeId , setMachineOwnerId , setSelectQuipmentId ,
+    setRenteeId , setMachineOwnerId , setSelectQuipmentId , setError,
     setSelectedJob , setWokerId, setMachineId,}  = appSlice.actions
 
 export default appSlice.reducer;

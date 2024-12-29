@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import  { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, Typography, Descriptions, Button, Spin } from 'antd';
 // import { useAppContext } from '../GlobalContext';
 
 import { useSelector } from 'react-redux';
-import { getJobAssignmentById } from '../../calls/JobAssignmentCalls';
+import { jobAssignmentService } from '../../calls/JobAssignmentCalls';
 
 const { Title } = Typography;
 
@@ -19,7 +19,7 @@ console.log('JobAssignmentId:', JobAssignmentId);
 useEffect(() => {
 const fetchJobAssignmentDetails = async () => {
     try {
-    const assignment = await getJobAssignmentById(JobAssignmentId);
+    const assignment = await jobAssignmentService.getByJobId(JobAssignmentId);
     setJobAssignment(assignment);
     } catch (error) {
     console.error('Error fetching job assignment details:', error);
@@ -97,3 +97,91 @@ return (
 };
 
 export default EmployeeDetails;
+
+
+
+
+
+// import React, { useEffect, useState } from 'react';
+// import { useNavigate } from 'react-router-dom';
+// import { Card, Typography, Descriptions, Button, Spin } from 'antd';
+// import { useSelector } from 'react-redux';
+// import { getJobAssignmentById } from '../../calls/JobAssignmentCalls';
+
+// const { Title } = Typography;
+
+// const EmployeeDetails = () => {
+//   const JobAssignmentId = useSelector((state) => state.app.JobAssignmentId);
+//   const navigate = useNavigate();
+//   const [jobAssignment, setJobAssignment] = useState(null);
+//   const [loading, setLoading] = useState(true);
+
+//   useEffect(() => {
+//     const fetchJobAssignmentDetails = async () => {
+//       try {
+//         const assignment = await getJobAssignmentById(JobAssignmentId);
+//         setJobAssignment(assignment);
+//       } catch (error) {
+//         console.error('Error fetching job assignment details:', error);
+//       } finally {
+//         setLoading(false);
+//       }
+//     };
+
+//     if (JobAssignmentId) {
+//       fetchJobAssignmentDetails();
+//     } else {
+//       setLoading(false);
+//     }
+//   }, [JobAssignmentId]);
+
+//   if (loading) {
+//     return (
+//       <div className="flex items-center justify-center min-h-screen bg-gray-100 p-4 sm:p-6">
+//         <Spin size="large" />
+//       </div>
+//     );
+//   }
+
+//   if (!jobAssignmentimport React, { useEffect, useState } from 'react';
+// import { useNavigate } from 'react-router-dom';
+// import { Card, Typography, Descriptions, Button, Spin } from 'antd';
+// import { useSelector } from 'react-redux';
+// import { getJobAssignmentById } from '../../calls/JobAssignmentCalls';
+
+// const { Title } = Typography;
+
+// const EmployeeDetails = () => {
+//   const JobAssignmentId = useSelector((state) => state.app.JobAssignmentId);
+//   const navigate = useNavigate();
+//   const [jobAssignment, setJobAssignment] = useState(null);
+//   const [loading, setLoading] = useState(true);
+
+//   useEffect(() => {
+//     const fetchJobAssignmentDetails = async () => {
+//       try {
+//         const assignment = await getJobAssignmentById(JobAssignmentId);
+//         setJobAssignment(assignment);
+//       } catch (error) {
+//         console.error('Error fetching job assignment details:', error);
+//       } finally {
+//         setLoading(false);
+//       }
+//     };
+
+//     if (JobAssignmentId) {
+//       fetchJobAssignmentDetails();
+//     } else {
+//       setLoading(false);
+//     }
+//   }, [JobAssignmentId]);
+
+//   if (loading) {
+//     return (
+//       <div className="flex items-center justify-center min-h-screen bg-gray-100 p-4 sm:p-6">
+//         <Spin size="large" />
+//       </div>
+//     );
+//   }
+
+//   if (!jobAssignment

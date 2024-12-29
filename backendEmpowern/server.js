@@ -70,14 +70,14 @@ app.use(express.urlencoded({ extended: true }));  // like html form
     
     app.use('/api/jobs', jobRoutes);
 // Routes
-app.use('/api/users', userRoutes)
-app.use('/api/workers', labourWorkerRoutes)
-app.use('/api/contractors', contractorRoutes)
-// app.use('/api/jobs', jobRoutes2)
-app.use('/api/skills', skillsRoutes)
-app.use('/api/workHistory', workHistoryRoutes)
-app.use('/api/rating', ratingsRoutes)
-app.use('/api/jobAssignment', jobAssignmentRoutes)
+// app.use('/api/jobs', jobRoutes2);
+app.use('/api/users', userRoutes);
+app.use('/api/workers', labourWorkerRoutes);
+app.use('/api/contractors', contractorRoutes);
+app.use('/api/skills', skillsRoutes);
+app.use('/api/workHistory', workHistoryRoutes);
+app.use('/api/rating', ratingsRoutes);
+app.use('/api/jobAssignment', jobAssignmentRoutes);
 app.get('/', (req, res) => {
     res.json({ 
         status: 'success',

@@ -52,8 +52,10 @@ const WorkInformation = () => {
     const handleApplyClick = async () => {
         try {
             setApplying(true);
-            await jobService.applyForJob(projectId);
-            setModalVisible(true);
+            // await jobService.applyForJob(projectId);
+            // setModalVisible(true);
+        navigate('/labor/apply-page');   // Instead of making API call, navigate to apply page
+        
         } catch (error) {
             Modal.error({
                 title: 'Application Failed',

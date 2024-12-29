@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Form, Input, Button, message } from 'antd';
-import { updateJob, getJobById } from '../../calls/jobCalls';
+import { jobService } from '../../calls/jobCalls';
 import { getContractorById } from '../../calls/contractorCalls';
 // import { useAppContext } from '../GlobalContext';
 import { useSelector } from 'react-redux';
@@ -9,9 +9,11 @@ import { useSelector } from 'react-redux';
 const AddProjectStep3 = () => {
   const [form] = Form.useForm();
   const navigate = useNavigate();
+  const[loading , setLoading] = useState(true);
     const contractorId = useSelector((state) => state.user.id);
     const projectId = useSelector((state) => state.app.projectId);
-  const [job, setJob] = useState(null);
+
+  // const [job, setJob] = useState(null);    the part is commented  in useEffect
   const [contractor, setContractor] = useState(null);
   const [ownerDetails, setOwnerDetails] = useState({
     name: '',
@@ -19,53 +21,102 @@ const AddProjectStep3 = () => {
     company: ''
   });
 
+// this is the updated working codee now  recently added
   useEffect(() => {
-    const fetchJob = async () => {
-      try {
-        const fetchedJob = await getJobById(projectId);
-        setJob(fetchedJob);
-      } catch (error) {
-        console.error('Error fetching job:', error);
-      }
-    };
-
-    if (projectId) {
-      fetchJob();
+    if (!contractorId || !projectId) {
+      message.error('Missing required information');
+      navigate('/contractor/add-project-step2');
+      return;
     }
-  }, [projectId]);
 
-  useEffect(() => {
-    const fetchContractor = async () => {
+    const loadJobDetails = async () => {
       try {
-        const contractor = await getContractorById(contractorId);
-        if (contractor && contractor.userId) {
-          setContractor(contractor);
-          console.log('Contractor:', contractor);
-          const user = contractor.userId;
-          setOwnerDetails({
-            name: user.firstName + ' ' + user.lastName,
-            mobile: user.mobileNumber,
-            company: contractor.companyName || ''
-          });
+        const jobData = await jobService.getJobById(projectId);
+        if (jobData) {
           form.setFieldsValue({
-            name: user.firstName + ' ' + user.lastName,
-            mobile: user.mobileNumber,
-            company: contractor.companyName || ''
+            ownerName: jobData.ownerDetails?.name || '',
+            ownerMobile: jobData.ownerDetails?.mobile || '',
+            company: jobData.ownerDetails?.company || '',
           });
         }
       } catch (error) {
-        console.error('Error fetching contractor:', error);
+        message.error('Error loading job details');
+      } finally {
+        setLoading(false);
       }
     };
 
-    if (contractorId) {
-      fetchContractor();
-    }
-  }, [contractorId, form]);
+    loadJobDetails();
+  }, [projectId, contractorId, form]);
+
+  // useEffect(() => {
+  //   const fetchJob = async () => {
+  //     try {
+  //       const fetchedJob = await getJobById(projectId);
+  //       setJob(fetchedJob);
+  //     } catch (error) {
+  //       console.error('Error fetching job:', error);
+  //     }
+  //   };
+  //   if (projectId) {
+  //     fetchJob();
+  //   }
+  // }, [projectId]);
+
+
+
+  // useEffect(() => {
+  //   const fetchContractor = async () => {
+  //     try {
+  //       const contractor = await getContractorById(contractorId);
+  //       if (contractor && contractor.userId) {
+  //         setContractor(contractor);
+  //         console.log('Contractor:', contractor);
+  //         const user = contractor.userId;
+  //         setOwnerDetails({
+  //           name: user.firstName + ' ' + user.lastName,
+  //           mobile: user.mobileNumber,
+  //           company: contractor.companyName || ''
+  //         });
+  //         form.setFieldsValue({
+  //           name: user.firstName + ' ' + user.lastName,
+  //           mobile: user.mobileNumber,
+  //           company: contractor.companyName || ''
+  //         });
+  //       }
+  //     } catch (error) {
+  //       console.error('Error fetching contractor:', error);
+  //     }
+  //   };
+  //   if (contractorId) {
+  //     fetchContractor();
+  //   }
+  // }, [contractorId, form]);
 
   const handleChange = (changedValues, allValues) => {
     setOwnerDetails(allValues);
   };
+
+
+  const handleFinish = async (values) => {
+    try {
+      const updatedJob = await jobService.updateJob(projectId, {
+        ownerDetails: values,
+        status: 'Open',
+      });
+
+      if (updatedJob) {
+        message.success('Project successfully created!');
+        navigate('/contractor/project-list');
+      }
+    } catch (error) {
+      message.error('Failed to update project details');
+    }
+  };
+
+  if (loading) {
+    return <Spin size="large" />;
+  }
 
   const handleAddProject = async () => {
     try {
@@ -74,9 +125,7 @@ const AddProjectStep3 = () => {
         ...job,
         postedBy: contractorId,
       };
-
       console.log('Updated job data:', updatedJobData);
-
       const updatedJob = await updateJob(job._id, updatedJobData);
       if (updatedJob) {
         message.success('Project added successfully!');
@@ -98,8 +147,9 @@ const AddProjectStep3 = () => {
         <Form
           form={form}
           layout="vertical"
-          initialValues={ownerDetails}
-          onValuesChange={handleChange}
+          // initialValues={ownerDetails}
+          // onValuesChange={handleChange}
+          onFinish={handleFinish}
         >
           <Form.Item
             label="Owner Name"

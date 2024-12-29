@@ -1,33 +1,32 @@
-// routes/jobRoutes.js
-//  this is just  a fake    code snippet to show how the routes are created in the backend
 import express from 'express';
 const router = express.Router();
 import Job from '../models/Jobs.js';
+import jobController from '../controllers/JobController.js';
 
-// Get all jobs
+// Get all jobs (including seeded)
 router.get('/', async (req, res) => {
     try {
         const jobs = await Job.find().sort({ postedDate: -1 });
-         // postedDate is a field in the Job model that stores the date when a job was posted  We sort by postedDate in descending order (-1) to show newest jobs first
-    // This helps users see the most recent job postings at the top of the list
-        console.log('Fetching jobs from database...')
-        console.log('Jobs fetched:', jobs.length); // Debug log
-        res.json(jobs); 
+        console.log('Sending jobs to client:', jobs.length);
+        res.json(jobs); // Send the array directly
     } catch (error) {
         console.error('Error fetching jobs:', error);
-        res.status(500).json({ 
-            message: 'Failed to fetch jobs',
-            error: error.message 
-        });
+        res.status(500).json({ message: 'Failed to fetch jobs', error: error.message });
     }
 });
-// Get job by ID
+
+// Get job by ID - Update route to match frontend exactly
 router.get('/getById/:id', async (req, res) => {
     try {
-        const job = await Job.findById(req.params.id);
+        console.log('Fetching job with ID:', req.params.id); // Debug log
+        const job = await Job.findById(req.params.id).populate('postedBy');
+        
         if (!job) {
-            return res.status(404).json({ message: 'Job not found' });
+            return res.status(404).json({ 
+                message: `Job with ID ${req.params.id} not found` 
+            });
         }
+        
         res.json(job);
     } catch (error) {
         console.error('Error fetching job:', error);
@@ -38,4 +37,37 @@ router.get('/getById/:id', async (req, res) => {
     }
 });
 
-export default  router;
+// Create new job
+router.post('/create', jobController.createJob);
+
+// Update job
+router.put('/update/:id', jobController.updateJob);
+
+// Delete job
+router.delete('/delete/:id', jobController.deleteJob);
+
+// Get jobs by contractor
+router.get('/posted-by/:id', jobController.getJobByPostedById);
+
+// Apply for job
+router.post('/apply/:jobId', async (req, res) => {
+    try {
+        const { jobId } = req.params;
+        const { workerId } = req.body;
+        
+        // Create job assignment
+        const assignment = {
+            job: jobId,
+            worker: workerId,
+            status: 'PENDING'
+        };
+        
+        // Save assignment
+        const newAssignment = await JobAssignment.create(assignment);
+        res.json(newAssignment);
+    } catch (error) {
+        res.status(500).json({ message: 'Error applying for job', error: error.message });
+    }
+});
+
+export default router;

@@ -7,7 +7,8 @@ import {
   EllipsisOutlined 
 } from '@ant-design/icons';
 import { useSelector } from 'react-redux';
-import { getJobAssignmentsByWorkerId } from '../../calls/JobAssignmentCalls';
+// import { getJobAssignmentsByWorkerId } from '../../calls/JobAssignmentCalls';
+import { jobAssignmentService } from '../../calls/JobAssignmentCalls';
 import debounce from 'lodash/debounce';
 import { useNavigate } from 'react-router-dom';
 
@@ -62,7 +63,7 @@ const MainPage = () => {
 
     try {
       // API call to fetch job assignments for the current worker
-      const jobAssignments = await getJobAssignmentsByWorkerId(workerId);
+      const jobAssignments = await jobAssignmentService.getByWorkerId(workerId);
 
       if (!isMounted.current) return;
 

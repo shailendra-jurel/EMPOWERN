@@ -14,11 +14,13 @@ import { useNavigate } from 'react-router-dom';
 import debounce from 'lodash/debounce';
 
 // API Calls (ensure these are imported from your actual API file)
-import { 
-getJobAssignmentsByWorkerId, 
-getJobAssignmentById,
-withdrawJobApplication
-} from '../../calls/JobAssignmentCalls';
+// import { 
+// getJobAssignmentsByWorkerId, 
+// jobAssignmentService.
+// withdrawJobApplication
+// } from '../../calls/JobAssignmentCalls';
+
+import { jobAssignmentService } from '../../calls/JobAssignmentCalls';
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -63,7 +65,7 @@ setIsLoading(true);
 setError(null);
 
 try {
-    const jobAssignments = await getJobAssignmentsByWorkerId(workerId);
+    const jobAssignments = await jobAssignmentService.getByWorkerId(workerId);
 
     if (!isMounted.current) return;
 
@@ -131,23 +133,25 @@ debounce(() => fetchJobAssignments(), 300),
 // Fetch detailed job information
 const fetchJobDetails = async (jobId) => {
 try {
-    const jobDetails = await getJobAssignmentById(jobId);
+    const jobDetails = await jobAssignmentService.getById(jobId);
     setSelectedJob(jobDetails);
     setIsJobModalVisible(true);
 } catch (error) {
+    console.error(error);
     message.error('Failed to fetch job details', 3);
 }
 };
 
 // Job action handlers
 const handleWithdrawApplication = async (jobId) => {
-try {
-    await withdrawJobApplication(jobId);
-    message.success('Application withdrawn successfully');
-    debouncedRefresh();
-} catch (error) {
-    message.error('Failed to withdraw application', 3);
-}
+    try {
+        await jobAssignmentService.withdrawJobApplication(jobId);
+        message.success('Application withdrawn successfully');
+        debouncedRefresh();  /// I have to once   revisit this to understand   gpt code
+    } catch (error) {
+        console.error(error);
+        message.error('Failed to withdraw application', 3);
+    }
 };
 
 // Lifecycle effects

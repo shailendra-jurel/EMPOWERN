@@ -16,7 +16,7 @@ const WorkSelectionPage = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [sortCriteria, setSortCriteria] = useState('date'); // Default sorting by date
-    // const { projectId } = useSelector((state) => state.app.projectId)
+    const { projectId } = useSelector((state) => state.app.projectId)
 const navigate = useNavigate();
 
 useEffect(() => {
@@ -26,17 +26,16 @@ useEffect(() => {
         const response = await jobService.getJobs();
         
         // Add debug logs
-        console.log('raw API Response:', response);
+        console.log('API Response:', response);
         
-        if (!response ) {
-          throw new Error('No response from server  or  Invalid Api response');
+        if (!Array.isArray(response)) {
+          console.error('Expected array response, got:', typeof response);
+          setError('Invalid data format received from server');
+          return;
         }
         
-        // Filter open jobs if response is an array
-        const openJobs = Array.isArray(response) 
-          ? response.filter(job => job.status === 'Open')
-          : [];
-          
+        // Filter open jobs
+        const openJobs = response.filter(job => job.status === 'Open' || job.status === 'OPEN');
         console.log('Filtered open jobs:', openJobs.length);
         
         setAvailableWorks(openJobs);

@@ -5,6 +5,10 @@ const generateFakeJobs = async (count = 20) => {
     const jobs = [];
     
     for (let i = 0; i < count; i++) {
+        const startDate = faker.date.future();
+        const endDate = new Date(startDate);
+        endDate.setDate(startDate.getDate() + faker.number.int({ min: 7, max: 30 }));
+
         const job = {
             name: faker.company.catchPhrase(),
             jobType: faker.helpers.arrayElement([
@@ -23,7 +27,9 @@ const generateFakeJobs = async (count = 20) => {
             workersRequired: faker.number.int({ min: 1, max: 10 }),
             skillsRequired: faker.lorem.words(3),
             postedBy: new mongoose.Types.ObjectId(),
-            postedDate: faker.date.recent({ days: 30 })
+            startDate: startDate,
+            endDate: endDate,
+            createdAt: faker.date.recent()
         };
         jobs.push(job);
     }

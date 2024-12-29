@@ -1,36 +1,27 @@
 import mongoose from 'mongoose';
-const Schema = mongoose.Schema;
 
-const jobAssignmentSchema = new Schema({
-    worker: {
-        type: Schema.Types.ObjectId,
-        ref: 'LabourWorker',
-    },
-    job: {
-        type: Schema.Types.ObjectId,
-        ref: 'Jobs',
-    },
-    demandedWage : {
-        type: Number,
-    },
-    assignmentDate: {
-        type: Date,
-        default: Date.now
-    },
-    extracontact: {
-        type: String,
-    },
-    additionalExpectations:{
-        type: String,
-    },
-    status: {
-        type: String,
-        enum: ['pending', 'accepted', 'rejected'],
-        default: 'pending',
-    },
-    amountRecieved: {
-        type: Number,
-    },
+const jobAssignmentSchema = new mongoose.Schema({
+  workerId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'LabourWorker',
+    required: true
+  },
+  jobId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Job',
+    required: true
+  },
+  status: {
+    type: String,
+    enum: ['pending', 'accepted', 'rejected', 'completed'],
+    default: 'pending'
+  },
+  demandedWage: Number,
+  extraContact: String,
+  contractTerms: String,
+  assignmentDate: Date
+}, {
+  timestamps: true
 });
 
 export default mongoose.model('JobAssignment', jobAssignmentSchema);

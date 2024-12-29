@@ -1,22 +1,27 @@
 import React, { useEffect, useState } from 'react';
 import { Button, List, Typography, Card } from 'antd';
 import { useNavigate } from 'react-router-dom';
-import { getJobsByPostedById } from '../../calls/jobCalls';
-// import { useAppContext } from '../GlobalContext';
+import { jobService } from '../../calls/jobCalls';
 
-import  {useSelector} from
+import {useSelector }  from 'react-redux';
+
+// import { useAppContext } from '../GlobalContext';
 
 const { Text, Title } = Typography;
 
 const ProjectList = () => {
-const { setProjectId, contractorId } = useAppContext();
+// const { setProjectId, contractorId } = useAppContext();
+
+
+const contractorId = useSelector((state) => state.user.id);
+
 const [projects, setProjects] = useState([]);
 const navigate = useNavigate();
 
 useEffect(() => {
 const fetchProjects = async () => {
     try {
-    const projectsData = await getJobsByPostedById(contractorId);
+    const projectsData = await jobService.getJobById(contractorId);
     setProjects(projectsData);
     } catch (error) {
     console.error('Error fetching jobs:', error);

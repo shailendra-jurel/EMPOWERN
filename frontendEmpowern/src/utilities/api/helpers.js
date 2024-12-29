@@ -3,7 +3,6 @@ import { API_CONFIG } from './config';
 import { ApiError } from './errors';
 /**
  * API Helper Utilities
- * 
  * Provides common utility functions for API interactions
  * including error handling and retry mechanisms
  */

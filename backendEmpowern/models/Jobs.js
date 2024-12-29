@@ -21,26 +21,42 @@ const jobSchema = new mongoose.Schema({
     status: {
         type: String,
         default: 'Open',
-        enum: ['Open', 'Assigned', 'Completed', 'Cancelled']
+        enum: ['Open', 'In Progress', 'Completed', 'Cancelled']
     },
     accomodation: {
-        type: Boolean
+        type: Boolean,
+        default: false
     },
     transportation: {
-        type: Boolean
+        type: Boolean,
+        default: false
     },
     workersRequired: {
-        type: Number
+        type: Number,
+        required: true
     },
     skillsRequired: {
         type: String
     },
-    description: String,
     postedBy: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Contractor'
+        ref: 'Contractor',
+        required: true
     },
-    postedDate: {
+    startDate: {
+        type: Date,
+        required: true
+    },
+    endDate: {
+        type: Date,
+        required: true
+    },
+    ownerDetails: {
+        name: String,
+        mobile: String,
+        company: String
+    },
+    createdAt: {
         type: Date,
         default: Date.now
     }

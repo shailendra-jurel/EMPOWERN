@@ -1,237 +1,287 @@
-// src/calls/jobService.js
 import { axiosInstance } from './axiosInstance';
 import { BaseApiService } from './baseApiService';
 import { apiHelpers } from '../utilities/api/helpers';
+import Logger from '../utilities/logger';
 
 /**
- * Configuration for Job API
+ * Configuration for Job API endpoints and settings
  */
 const JOB_API_CONFIG = {
-endpoints: {
-base: '/api/jobs',
-getAll: '/',//previously it was '/getAllJobs'
-getById: '/getById', 
-create: '/',  //previously it was '/create'
-update: '/:id',  //previously it was '/update'
-apply: '/apply',
-search: '/search',
-postedBy: '/posted-by'
-},
-cache: {
-ttl: 5 * 60 * 1000, // 5 minutes
-enabled: true
-}
+    endpoints: {
+        base: '/api/jobs', // Remove hardcoded URL, use relative path
+        getAll: '/',
+        getById: '/getById', // Add slash at the beginning
+        create: '/create',
+        update: '/update',
+        delete: '/delete',
+        apply: '/apply',
+        search: '/search',
+        postedBy: '/posted-by',
+        report: '/report',
+        favorite: '/favorite',
+        assignments: '/assignments',
+        statistics: '/statistics',
+        recommendations: '/recommendations',
+        urgent: '/urgent',
+        featured: '/featured',
+        analytics: '/analytics'
+    },
+    cache: {
+        ttl: 5 * 60 * 1000, // 5 minutes
+        enabled: true
+    },
+    pagination: {
+        defaultLimit: 10,
+        maxLimit: 100
+    }
 };
 
 /**
- * Enhanced Job Service class extending BaseApiService
- * Provides comprehensive job-related API operations with caching and error handling
+ * Enhanced Job Service with comprehensive job management features
  */
-class JobService extends BaseApiService {
-constructor() {
-super(axiosInstance, JOB_API_CONFIG.endpoints.base);
-this.config = JOB_API_CONFIG;
-}
+class EnhancedJobService extends BaseApiService {
+    constructor() {
+        super(axiosInstance, JOB_API_CONFIG.endpoints.base);
+        this.config = JOB_API_CONFIG;
+    }
 
-/**
- * Fetch all jobs with optional caching
- * @param {boolean} useCache - Whether to use cache
- * @returns {Promise<Array>} List of jobs
- */
-
-async getJobs(useCache = this.config.cache.enabled) {
-    try {
-        console.log('Fetching all jobs...');
-        const cacheKey = this.config.endpoints.getAll;
-        const url = `${this.endpoint}${this.config.endpoints.getAll}`;
-
-        if (useCache) {
-            return await this.cache.get(
-                cacheKey,
-                async () => {
-                    // Use axios to fetch from combined endpoint
-                    const response = await this.axios.get(url);
-                    return response.data;
-                },
-                this.config.cache.ttl
-            );
+    /**
+     * Fetch all jobs with advanced filtering and pagination
+     * @param {Object} options - Filter and pagination options
+     * @param {boolean} useCache - Whether to use cache
+     * @returns {Promise<Object>} Paginated job list with metadata
+     */
+    async getJobs(options = {}, useCache = this.config.cache.enabled) {
+        try {
+            Logger.info('Fetching jobs...');
+            const response = await this.axios.get(this.config.endpoints.base);
+            
+            // Add debug logs
+            Logger.info('Raw API Response:', response);
+            
+            if (!response || !response.data) {
+                throw new Error('Invalid API response');
+            }
+            
+            // Filter open jobs if response.data is an array
+            const jobs = response.data;
+            Logger.info('Received jobs:', jobs.length);
+            
+            return jobs;
+        } catch (error) {
+            Logger.error('Error fetching jobs:', error);
+            throw error;
         }
+    }
 
-        // Use apiHelpers.withRetry to retry on failure
-        const response = await apiHelpers.withRetry(() => this.axios.get(url));
-        if (!response.data) {
-            throw new Error('No data received from server (jobCalls)');
-        }
+    /**
+     * Internal method to fetch jobs with retry mechanism
+     * @private
+     */
+    async fetchJobs(params) {
+        const response = await apiHelpers.withRetry(() =>
+            this.axios.get(this.config.endpoints.getAll, { params })
+        );
         return response.data;
-    } catch (error) {
-        return apiHelpers.handleError(error, 'fetch all jobs');
     }
-}
 
-/**
- * Get job by ID with optional caching
- * @param {string} id - Job ID
- * @param {boolean} useCache - Whether to use cache
- * @returns {Promise<Object>} Job details
- */
-async getJobById(id, useCache = this.config.cache.enabled) {
-if (!id) throw new Error('Job ID is required');
+    /**
+     * Get detailed job information by ID
+     * @param {string} id - Job ID
+     * @param {boolean} includeRelated - Include related data
+     * @returns {Promise<Object>} Job details with related information
+     */
+    async getJobById(id, includeRelated = false) {
+        if (!id) throw new Error('Job ID is required');
 
-try {
-    const cacheKey = `${this.config.endpoints.getById}/${id}`;
-    if (useCache) {
-    return await this.cache.get(
-        cacheKey,
-        async () => {
-            const response = await this.axios.get(`${this.endpoint}${this.config.endpoints.getById}/${id}`);
+        try {
+            const params = { includeRelated };
+            // Fix URL construction with proper path joining
+            const url = `${this.config.endpoints.base}${this.config.endpoints.getById}/${id}`;
+            console.log('Requesting URL:', url); // Debug log
+            
+            const response = await apiHelpers.withRetry(() =>
+                this.axios.get(url, { params })
+            );
             return response.data;
-        },
-        this.config.cache.ttl
-    );
+        } catch (error) {
+            Logger.error(`Error fetching job ${id}:`, error);
+            throw apiHelpers.handleError(error, 'get job by ID');
+        }
     }
 
-    const response = await apiHelpers.withRetry(() =>
-    this.axios.get(`${this.config.endpoints.getById}/${id}`)
-    );
-    return response.data;
-} catch (error) {
-    return apiHelpers.handleError(error, 'get job by ID');
-}
-}
+    /**
+     * Create a new job with validation and optional scheduling
+     * @param {Object} jobData - Job details
+     * @param {Object} options - Additional options
+     * @returns {Promise<Object>} Created job
+     */
+    async createJob(jobData, options = {}) {
+        try {
+            await this.validateJobData(jobData);
+            
+            const payload = {
+                ...jobData,
+                ...options,
+                status: options.scheduled ? 'SCHEDULED' : 'ACTIVE'
+            };
 
-/**
- * Get jobs posted by a specific user
- * @param {string} userId - User ID
- * @returns {Promise<Array>} List of jobs
- */
-async getJobsByPostedById(userId) {
-if (!userId) throw new Error('User ID is required');
+            const response = await apiHelpers.withRetry(() =>
+                this.axios.post(this.config.endpoints.create, payload)
+            );
 
-try {
-    const response = await apiHelpers.withRetry(() =>
-    this.axios.get(`${this.config.endpoints.postedBy}/${userId}`)
-    );
-    return response.data;
-} catch (error) {
-    return apiHelpers.handleError(error, 'get jobs by posted ID');
-}
-}
+            await this.invalidateJobCache();
+            Logger.info('Job created successfully:', response.data);
+            return response.data;
+        } catch (error) {
+            Logger.error('Error creating job:', error);
+            throw apiHelpers.handleError(error, 'create job');
+        }
+    }
 
-/**
- * Create a new job
- * @param {Object} jobData - Job details
- * @returns {Promise<Object>} Created job
- */
-async createJob(jobData) {
-try {
-    await this.validateJobData(jobData);
-    const response = await apiHelpers.withRetry(() =>
-    this.axios.post(this.config.endpoints.create, jobData)
-    );
-    await this.invalidateJobCache();
-    return response.data;
-} catch (error) {
-    return apiHelpers.handleError(error, 'create job');
-}
-}
+    /**
+     * Apply for a job with additional application details
+     * @param {string} jobId - Job ID
+     * @param {Object} applicationData - Application details
+     * @returns {Promise<Object>} Application result
+     */
+    async applyForJob(jobId, applicationData) {
+        if (!jobId) throw new Error('Job ID is required');
 
-/**
- * Update an existing job
- * @param {string} id - Job ID
- * @param {Object} jobData - Updated job details
- * @returns {Promise<Object>} Updated job
- */
-async updateJob(id, jobData) {
-if (!id) throw new Error('Job ID is required');
+        try {
+            const payload = {
+                ...applicationData,
+                appliedAt: new Date().toISOString(),
+                status: 'PENDING'
+            };
 
-try {
-    await this.validateJobData(jobData);
-    const response = await apiHelpers.withRetry(() =>
-    this.axios.put(`${this.config.endpoints.update}/${id}`, jobData)
-    );
-    await this.invalidateJobCache(id);
-    return response.data;
-} catch (error) {
-    return apiHelpers.handleError(error, 'update job');
-}
-}
+            const response = await apiHelpers.withRetry(() =>
+                this.axios.post(`${this.config.endpoints.apply}/${jobId}`, payload)
+            );
 
-/**
- * Apply for a job
- * @param {string} jobId - Job ID
- * @param {Object} applicationData - Application details
- * @returns {Promise<Object>} Application result
- */
-async applyForJob(jobId, applicationData = { status: 'Applied' }) {
-if (!jobId) throw new Error('Job ID is required');
+            Logger.info(`Application submitted for job ${jobId}:`, response.data);
+            await this.invalidateJobCache(jobId);
+            return response.data;
+        } catch (error) {
+            Logger.error(`Error applying for job ${jobId}:`, error);
+            throw apiHelpers.handleError(error, 'apply for job');
+        }
+    }
 
-try {
-    const response = await apiHelpers.withRetry(() =>
-    this.axios.post(`${this.config.endpoints.apply}/${jobId}`, applicationData)
-    );
-    await this.invalidateJobCache(jobId);
-    return response.data;
-} catch (error) {
-    return apiHelpers.handleError(error, 'apply for job');
-}
-}
+    /**
+     * Get job statistics and analytics
+     * @param {string} jobId - Job ID
+     * @returns {Promise<Object>} Job statistics
+     */
+    async getJobStatistics(jobId) {
+        try {
+            const response = await apiHelpers.withRetry(() =>
+                this.axios.get(`${this.config.endpoints.statistics}/${jobId}`)
+            );
+            return response.data;
+        } catch (error) {
+            Logger.error(`Error fetching job statistics for ${jobId}:`, error);
+            throw apiHelpers.handleError(error, 'get job statistics');
+        }
+    }
 
-/**
- * Search jobs with filters
- * @param {Object} filters - Search filters
- * @returns {Promise<Array>} Filtered jobs
- */
-async searchJobs(filters = {}) {
-try {
-    const response = await apiHelpers.withRetry(() =>
-    this.axios.get(this.config.endpoints.search, { params: filters })
-    );
-    return response.data;
-} catch (error) {
-    return apiHelpers.handleError(error, 'search jobs');
-}
-}
+    /**
+     * Get recommended jobs based on user profile and preferences
+     * @param {string} userId - User ID
+     * @param {Object} preferences - User preferences
+     * @returns {Promise<Array>} Recommended jobs
+     */
+    async getRecommendedJobs(userId, preferences = {}) {
+        try {
+            const response = await apiHelpers.withRetry(() =>
+                this.axios.get(`${this.config.endpoints.recommendations}/${userId}`, {
+                    params: preferences
+                })
+            );
+            return response.data;
+        } catch (error) {
+            Logger.error(`Error fetching recommended jobs for user ${userId}:`, error);
+            throw apiHelpers.handleError(error, 'get recommended jobs');
+        }
+    }
 
-/**
- * Validate job data
- * @private
- * @param {Object} jobData - Job data to validate
- */
-async validateJobData(jobData) {
-const requiredFields = ['title', 'description', 'location'];
-const missingFields = requiredFields.filter(field => !jobData[field]);
+    // this is the method  I have made mySelf  may have some errors
+    async updateJob(jobId, jobData) {
+        if (!jobId) throw new Error('Job ID is required');
+    
+        try {
+          await this.validateJobData(jobData);
+    
+          const response = await apiHelpers.withRetry(() =>
+            this.axios.put(`${this.config.endpoints.update}/${jobId}`, jobData)
+          );
+    
+          await this.invalidateJobCache(jobId);
+          Logger.info(`Job ${jobId} updated successfully:`, response.data);
+          return response.data;
+        } catch (error) {
+          Logger.error(`Error updating job ${jobId}:`, error);
+          throw apiHelpers.handleError(error, 'update job');
+        }
+      }
 
-if (missingFields.length > 0) {
-    throw new Error(`Missing required fields: ${missingFields.join(', ')}`);
-}
-}
+    /**
+     * Get urgent or featured jobs
+     * @param {string} type - 'urgent' or 'featured'
+     * @returns {Promise<Array>} List of special jobs
+     */
+    async getSpecialJobs(type = 'urgent') {
+        try {
+            const endpoint = type === 'urgent' ? 
+                this.config.endpoints.urgent : 
+                this.config.endpoints.featured;
 
-/**
- * Invalidate job cache
- * @private
- * @param {string} [jobId] - Specific job ID to invalidate
- */
-async invalidateJobCache(jobId = null) {
-if (jobId) {
-    await this.cache.invalidate(`${this.config.endpoints.getById}/${jobId}`);
-}
-await this.cache.invalidate(this.config.endpoints.getAll);
-}
+            const response = await apiHelpers.withRetry(() =>
+                this.axios.get(endpoint)
+            );
+            return response.data;
+        } catch (error) {
+            Logger.error(`Error fetching ${type} jobs:`, error);
+            throw apiHelpers.handleError(error, `get ${type} jobs`);
+        }
+    }
+
+    /**
+     * Validate job data with enhanced validation rules
+     * @private
+     */
+    async validateJobData(jobData) {
+        const requiredFields = [
+            'title',
+            'description',
+            'location',
+            'salary',
+            'skillSet',
+            'jobType'
+        ];
+
+        const missingFields = requiredFields.filter(field => !jobData[field]);
+        if (missingFields.length > 0) {
+            throw new Error(`Missing required fields: ${missingFields.join(', ')}`);
+        }
+
+        // Additional validation rules
+        if (jobData.salary < 0) {
+            throw new Error('Salary cannot be negative');
+        }
+
+        if (jobData.description.length < 50) {
+            throw new Error('Job description must be at least 50 characters long');
+        }
+
+        if (!Array.isArray(jobData.skillSet) || jobData.skillSet.length === 0) {
+            throw new Error('At least one skill must be specified');
+        }
+    }
 }
 
 // Export singleton instance
-export const jobService = new JobService();
+export const jobService = new EnhancedJobService();
 
-// Export individual methods for convenience
-export const {
-getJobs,
-getJobById,
-getJobsByPostedById,
-createJob,
-updateJob,
-applyForJob,
-searchJobs
-} = jobService;
-
-// Export service for advanced usage
-export default JobService;
+// Export service class for advanced usage
+export default EnhancedJobService;

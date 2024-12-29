@@ -1,8 +1,5 @@
-
-
-import React from 'react'
 //  , Navigate, Link
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes , Navigate} from 'react-router-dom';
 // import { AppProvider } from './context/GlobalContext';
 import { Provider } from 'react-redux';
 import {store} from './store/store'
@@ -17,7 +14,8 @@ import WorkSelectionPage from './components/WorkerFlow/WorkSelectionPage';
 import WorkInformation from './components/WorkerFlow/WorkInformation';
 import AdditionalInfo from './components/WorkerFlow/AdditionalInfo';
 // import OngoingPage from './components/WorkerFlow/OngoingPage';
-import ApplyingPage from  './components/WorkerFlow/ApplyingPage'
+import ApplyPage from  './components/WorkerFlow/ApplyingPage'
+// import WorkStatusPage from './components/WorkerFlow/WorkStatusPage';
 
 
 //  Contractor  Work Flow
@@ -26,11 +24,15 @@ import ApplyingPage from  './components/WorkerFlow/ApplyingPage'
 import EmployeeDetails from './components/ContractorFlow/EmployeeDetails'
 import ProjectApplications  from './components/ContractorFlow/ProjectDetails'
 import ProjectDetails  from './components/ContractorFlow/ProjectDetails'
-import ProjectList  from './components/ContractorFlow/ProjectList'
+// import ProjectList  from './components/ContractorFlow/ProjectList'
+import AddProjectStep from './components/ContractorFlow/AddProjectStep'
 import  AddProjectStep2  from './components/ContractorFlow/AddProjectStep2'
 import AddProjectStep3  from './components/ContractorFlow/AddProjectStep3'
+import ContractorMainPage from './components/ContractorFlow/ContractorMainPage'
 
 
+
+import ContractPage from './components/ContractPage';
 
 function App(){
   return (
@@ -43,28 +45,31 @@ function App(){
 
 
         <Routes>
-          
-          <Route path="/" element={<MainPage />} />
-          <Route path="/applied" element={<AppliedPage />} />
-          {/* <Route path="/ongoing" element={<OngoingPage />} /> */}
-          <Route path="/labor/work-selection" element={<WorkSelectionPage />} />
-          <Route path="/labor/work-information" element={<WorkInformation />} />
-          <Route path="/labor/additional-info" element={<AdditionalInfo />} />
-          <Route  path = '/labor/apply-page'  element = {<ApplyingPage/>}  />
+         {/* Worker Flow Routes */}
+         <Route path="/labor">
+            <Route path="main-page" element={<MainPage />} />
+            <Route path="applied" element={<AppliedPage />} />
+            <Route path="work-selection" element={<WorkSelectionPage />} />
+            <Route path="work-information" element={<WorkInformation />} />
+            <Route path="additional-info" element={<AdditionalInfo />} />
+            <Route path="apply-page" element={<ApplyPage />} />
+            <Route path="contract-page" element={<ContractPage />} />
+            {/* <Route path="work-status" element={<WorkStatusPage />} /> */}
+          </Route>
 
+          {/* Contractor Flow Routes */}
+          <Route path="/contractor">
+            <Route path="main-page" element={<ContractorMainPage />} />
+            <Route path="add-project" element={<AddProjectStep />} />
+            <Route path="add-project-step2" element={<AddProjectStep2 />} />
+            <Route path="add-project-step3" element={<AddProjectStep3 />} />
+            <Route path="employee-details" element={<EmployeeDetails />} />
+            <Route path="project-applications" element={<ProjectApplications />} />
+            <Route path="project-details" element={<ProjectDetails />} />
+          {/*  <Route path="project-list" element={<ProjectList />} />   */}
+          </Route>
 
-
-
-
-      {/* Contractor Workflow  */}
-          <Route path="/contractor/add-project-step2" element={<AddProjectStep2 />} />
-        <Route path="/contractor/add-project-step3" element={<AddProjectStep3 />} />
-        <Route path="/contractor/employee-details" element={<EmployeeDetails />} />
-        <Route path="/contractor/project-applications" element={<ProjectApplications />} />
-        <Route path="/contractor/project-details" element={<ProjectDetails />} />
-        <Route path="/contractor/project-list" element={<ProjectList />} />
-
-
+          <Route path="/" element={<Navigate to="/labor/main-page" />} />
 
 
         </Routes>

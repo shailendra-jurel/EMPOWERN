@@ -1,228 +1,237 @@
-import React, { useEffect, useState } from 'react';
-import { Button, Form, Input, Upload, message, Card, Image } from 'antd';
-import { UploadOutlined, DeleteOutlined } from '@ant-design/icons';
+import  { useState, useEffect } from 'react';
+import { Button, Form, Input, Upload, message, Card, Typography, Steps, Select, Tooltip } from 'antd';
+import { FiCamera, FiUpload, FiTrash2 } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
-import PhoneInput from 'react-phone-input-2';
-import 'react-phone-input-2/lib/style.css';
-// import { useAppContext } from '../GlobalContext';
 import { useSelector } from 'react-redux';
 import { getLabourWorkerById } from '../../calls/employees';
-import { createJobAssignment } from '../../calls/JobAssignmentCalls';
-import { getJobById } from '../../calls/jobCalls';
+// import { getJobById } from '../../calls/jobCalls';
+import { jobService } from '../../calls/jobCalls';
 
-// Inline phone number validation function
-const validatePhoneNumber = (number) => {
-  const phoneRegex = /^[+]*[0-9]{10,15}$/; // Adjust regex as needed
-  return phoneRegex.test(number);
-};
+const { Title } = Typography;
+
+// Validation functions
+const validatePhoneNumber = (number) => /^[+]*[0-9]{10,15}$/.test(number);
+const validateAadhaar = (number) => /^\d{12}$/.test(number);
 
 const ApplyPage = () => {
   const [form] = Form.useForm();
+  const [currentStep, setCurrentStep] = useState(0);
   const [photo, setPhoto] = useState(null);
-  const [extraContact, setExtraContact] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-const workerId = useSelector((state) =>  state.app.workerId)
-const projectId = useSelector((state) =>  state.app.projectId)
+  const workerId = useSelector((state) => state.app.workerId);
+  const projectId = useSelector((state) => state.app.projectId);
 
-  const [worker, setWorker] = useState(null);
   const [project, setProject] = useState(null);
 
-  const handlePhotoUpload = ({ file }) => {
-    const isImage = file.type.startsWith('image/');
-    if (!isImage) {
-      message.error('You can only upload image files!');
-      return Upload.LIST_IGNORE;
-    }
-    setPhoto(file);
-    return false; // Prevent automatic upload
-  };
-
-  const handleDeletePhoto = () => {
-    setPhoto(null);
-  };
-
-  const onFinish = async (values) => {
-    if (!validatePhoneNumber(values.additionalMobile)) {
-      message.error('Invalid mobile number!');
-      return;
-    }
-
-    const assignment = {
-      worker: workerId,
-      job: projectId,
-      demandedWage: values.demandedWage,
-      extracontact: values.extraContact,
-      additionalExpectations: values.expectations
-    };
-
-    try {
-      await createJobAssignment(assignment);
-      message.success('Job assignment created successfully!');
-      navigate('/labor/main');
-    } catch (error) {
-      message.error('Error creating job assignment:', error);
-      console.error('Error creating job assignment:', error);
-    }
-  };
-
   useEffect(() => {
-    const fetchProject = async () => {
+    const fetchData = async () => {
       try {
-        const projectData = await getJobById(projectId);
+        const [projectData, workerData] = await Promise.all([
+          jobService.getJobById(projectId),
+          getLabourWorkerById(workerId),
+        ]);
         setProject(projectData);
-        console.log('Project fetched in the apply page:', projectData);
-      } catch (error) {
-        console.error('Error fetching project:', error);
-      }
-    };
-    fetchProject();
-  }, [projectId]);
-
-  useEffect(() => {
-    const fetchWorker = async () => {
-      try {
-        const workerData = await getLabourWorkerById(workerId);
-        setWorker(workerData);
-        console.log('Worker fetched in the apply page:', workerData);
-        // Set form fields with worker's existing data
+        // Prefill form
         form.setFieldsValue({
           name: workerData.userId.firstName || '',
           lastName: workerData.userId.lastName || '',
-          aadhaar: '', // Replace with worker's aadhaar if available
-          specialization: '', // Replace with worker's specialization if available
-          demandedWage: '', // Replace with worker's demanded wage if available
-          extraContact: '', // Replace with worker's extra contact if available
+          aadhaar: workerData.aadhaar || '',
+          specialization: workerData.specialization || '',
+          demandedWage: workerData.expectedWage || '',
           additionalMobile: workerData.userId.mobileNumber || '',
+          experience: workerData.experience || '',
+          availability: workerData.availability || 'full-time',
+          preferredWorkHours: workerData.preferredWorkHours || '',
+          linkedInProfile: workerData.linkedInProfile || '',
         });
 
         setPhoto(workerData.workerImage);
       } catch (error) {
-        console.error('Error fetching worker:', error);
+        message.error('Error fetching data');
+        console.error(error);
       }
     };
-    fetchWorker();
-  }, [workerId, form]);
+    fetchData();
+  }, [workerId, projectId, form]);
+
+  const handlePhotoUpload = (file) => {
+    if (!file.type.startsWith('image/')) {
+      message.error('Please upload an image file');
+      return false;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      message.error('Image size should not exceed 2MB');
+      return false;
+    }
+    setPhoto(URL.createObjectURL(file));
+    return false;
+  };
+
+  const steps = [
+    {
+      title: 'Basic Information',
+      content: (
+        <div className="space-y-4">
+          <div className="text-center mb-6">
+            <div className="relative inline-block">
+              {photo ? (
+                <div className="relative w-24 h-24 mx-auto">
+                  <img
+                    src={photo}
+                    alt="Profile"
+                    className="w-full h-full rounded-full object-cover"
+                  />
+                  <Button
+                    danger
+                    shape="circle"
+                    icon={<FiTrash2 />}
+                    className="absolute -top-2 -right-2"
+                    onClick={() => setPhoto(null)}
+                  />
+                </div>
+              ) : (
+                <div className="w-24 h-24 mx-auto bg-gray-100 rounded-full flex items-center justify-center">
+                  <FiCamera className="h-8 w-8 text-gray-400" />
+                </div>
+              )}
+              <Upload
+                accept="image/*"
+                showUploadList={false}
+                beforeUpload={handlePhotoUpload}
+              >
+                <Button className="mt-2">
+                  <FiUpload className="mr-2" /> Update Photo
+                </Button>
+              </Upload>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Form.Item label="First Name" name="name" rules={[{ required: true }]}>
+              <Input placeholder="Enter your first name" />
+            </Form.Item>
+            <Form.Item label="Last Name" name="lastName" rules={[{ required: true }]}>
+              <Input placeholder="Enter your last name" />
+            </Form.Item>
+          </div>
+
+          <Form.Item
+            label="Aadhaar Number"
+            name="aadhaar"
+            rules={[
+              { required: true },
+              {
+                validator: (_, value) =>
+                  validateAadhaar(value)
+                    ? Promise.resolve()
+                    : Promise.reject('Invalid Aadhaar number'),
+              },
+            ]}
+          >
+            <Input maxLength={12} placeholder="Enter your Aadhaar number" />
+          </Form.Item>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Form.Item label="Mobile Number" name="additionalMobile" rules={[
+                          { required: true },
+                          {
+                            validator: (_, value) => validatePhoneNumber(value)
+                              ? Promise.resolve()
+                              : Promise.reject('Invalid phone number'),
+                          },
+                        ]}>
+                          <Input placeholder="Enter your mobile number" />
+                        </Form.Item>
+            <Form.Item label="Alternative Contact" name="extraContact">
+              <Input placeholder="Enter alternative contact number" />
+            </Form.Item>
+          </div>
+        </div>
+      ),
+    },
+    {
+      title: 'Work Details',
+      content: (
+        <div className="space-y-4">
+          <Form.Item
+            label="Skills/Specialization"
+            name="specialization"
+            rules={[{ required: true }]}
+          >
+            <Select
+              mode="multiple"
+              placeholder="Select your skills"
+              options={[
+                { value: 'masonry', label: 'Masonry' },
+                { value: 'carpentry', label: 'Carpentry' },
+                { value: 'plumbing', label: 'Plumbing' },
+                { value: 'electrical', label: 'Electrical' },
+                { value: 'painting', label: 'Painting' },
+              ]}
+            />
+          </Form.Item>
+
+          <Form.Item label="LinkedIn Profile (Optional)" name="linkedInProfile">
+            <Input placeholder="Enter your LinkedIn profile link" />
+          </Form.Item>
+
+          <Form.Item
+            label="Expected Daily Wage (₹)"
+            name="demandedWage"
+            rules={[{ required: true }]}
+          >
+            <Input type="number" min={0} placeholder="Enter your expected wage" />
+          </Form.Item>
+
+          <Form.Item label="Additional Notes" name="expectations">
+            <Input.TextArea rows={3} placeholder="Any additional information you'd like to share..." />
+          </Form.Item>
+        </div>
+      ),
+    },
+  ];
+
+  const onFinish = async (values) => {
+    setLoading(true);
+    try {
+      navigate('/labor/contract-page', {
+        state: { ...values, workerId, projectId, photo, projectDetails: project },
+      });
+    } catch (error) {
+      message.error('Error submitting application');
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <div className="p-4 md:p-8 lg:p-12 max-w-3xl mx-auto bg-gradient-to-br from-gray-50 via-gray-100 to-white rounded-xl shadow-lg space-y-6">
-      <h1 className="text-2xl md:text-3xl font-bold mb-4 md:mb-6 text-center text-gray-800">Apply for the Job</h1>
-      <div className="flex justify-center">
-        <Card className="w-full max-w-md bg-white p-4 rounded-lg shadow-md border border-gray-200">
-          <div className="flex items-center justify-center mb-4 relative">
-            {photo ? (
-              <div className="relative inline-block w-full">
-                <Image
-                  width={100}
-                  src={photo}
-                  alt="Profile"
-                  className="rounded-full border-2 border-gray-300 shadow-md"
-                />
-                <Button
-                  icon={<DeleteOutlined />}
-                  onClick={handleDeletePhoto}
-                  className="absolute top-0 right-0 bg-red-500 text-white border-none rounded-full shadow-md"
-                  size="small"
-                />
-              </div>
-            ) : (
-              <div className="p-4 bg-gray-200 rounded-lg flex justify-center items-center">
-                <Image width={50} src="/placeholder.png" alt="Placeholder" className="rounded-lg" />
-              </div>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 p-4 md:p-6">
+      <Card className="max-w-3xl mx-auto">
+        <Title level={4} className="text-center">
+          Apply for {project?.name || 'Job'}
+        </Title>
+        <Steps current={currentStep} items={steps.map((step) => ({ title: step.title }))} className="mb-8" />
+        <Form form={form} layout="vertical" onFinish={onFinish} className="space-y-6">
+          {steps[currentStep].content}
+          <div className="flex justify-between mt-6">
+            {currentStep > 0 && (
+              <Button onClick={() => setCurrentStep((prev) => prev - 1)}>Previous</Button>
             )}
-            <Upload
-              name="photo"
-              listType="picture"
-              beforeUpload={() => false} // Disable automatic upload
-              onChange={handlePhotoUpload}
-              maxCount={1}
-              showUploadList={false} // Disable showing uploaded file list
-              className="mt-2"
-            >
-              <Button icon={<UploadOutlined />} className="bg-[#e96f4c] text-white rounded-lg hover:bg-[#f28d6f] shadow-md">
-                Upload Photo
+            {currentStep < steps.length - 1 && (
+              <Button type="primary" onClick={() => setCurrentStep((prev) => prev + 1)}>
+                Next
               </Button>
-            </Upload>
+            )}
+            {currentStep === steps.length - 1 && (
+              <Button type="primary" htmlType="submit" loading={loading}>
+                Submit
+              </Button>
+            )}
           </div>
-          <Form
-            form={form}
-            layout="vertical"
-            onFinish={onFinish}
-          >
-            <Form.Item
-              label="Name"
-              name="name"
-              rules={[{ required: true, message: 'Name is required!' }]}
-            >
-              <Input placeholder="Enter your name" className="rounded-lg border-gray-300" />
-            </Form.Item>
-
-            <Form.Item
-              label="Last Name"
-              name="lastName"
-              rules={[{ required: true, message: 'Last name is required!' }]}
-            >
-              <Input placeholder="Enter your last name" className="rounded-lg border-gray-300" />
-            </Form.Item>
-
-            <Form.Item
-              label="Aadhaar"
-              name="aadhaar"
-              rules={[{ required: true, message: 'Aadhaar is required!' }]}
-            >
-              <Input placeholder="Enter your Aadhaar number" className="rounded-lg border-gray-300" />
-            </Form.Item>
-
-            <Form.Item
-              label="Skills"
-              name="specialization"
-              rules={[{ required: true, message: 'Specialization is required!' }]}
-            >
-              <Input placeholder="Enter your specialization" className="rounded-lg border-gray-300" />
-            </Form.Item>
-
-            <Form.Item
-              label="Demanded Wage"
-              name="demandedWage"
-              rules={[{ required: true, message: 'Demanded wage is required!' }]}
-            >
-              <Input placeholder="Enter your demanded wage" type="number" className="rounded-lg border-gray-300" />
-            </Form.Item>
-
-            <Form.Item
-              label="Extra Contact Information"
-              name="extraContact"
-            >
-              <Input placeholder="Enter extra contact information" value={extraContact} onChange={(e) => setExtraContact(e.target.value)} className="rounded-lg border-gray-300" />
-            </Form.Item>
-
-            <Form.Item
-              label="Additional Expectations"
-              name="expectations"
-            >
-              <Input.TextArea placeholder="Enter any additional expectations" className="rounded-lg border-gray-300" />
-            </Form.Item>
-
-            <Form.Item
-              label="Additional Mobile Number"
-              name="additionalMobile"
-            >
-              <PhoneInput
-                country={'us'}
-                value={extraContact}
-                onChange={setExtraContact}
-                placeholder="Enter another mobile number"
-                inputStyle={{ width: '100%', borderRadius: '8px', borderColor: '#d1d5db' }}
-              />
-            </Form.Item>
-
-            <Form.Item>
-              <Button type="primary" htmlType="submit" className="w-auto bg-[#e96f4c] justify-center text-white rounded-lg hover:bg-[#f28d6f] shadow-md">
-                Apply
-              </Button>
-            </Form.Item>
-          </Form>
-        </Card>
-      </div>
+        </Form>
+      </Card>
     </div>
   );
 };
