@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState , useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Form, Select, Input, Button, Typography, message, Upload, DatePicker, Checkbox } from 'antd';
 import { jobService } from '../../calls/jobCalls';
@@ -48,6 +48,15 @@ const AddProject = () => {
     }
   };
 
+
+  useEffect(() => {
+    if (!contractorId) {
+      console.warn('No contractor ID found');
+      // Optionally redirect to login
+      // navigate('/login');
+    }
+  }, [contractorId]);
+
   const handleSelectChange = (name, value) => {
     setDetails({ ...projectDetails, [name]: value });
   };
@@ -66,8 +75,10 @@ const AddProject = () => {
 
   const handleProceed = async () => {
     if (!contractorId) {
-        message.error('Please login first');
-        return;
+      message.error('Please login first');
+      // Optionally redirect to login page
+      navigate('/login');
+      return;
     }
 
     const requiredFields = [

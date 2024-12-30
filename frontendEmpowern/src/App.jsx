@@ -4,8 +4,9 @@ import { BrowserRouter as Router, Route, Routes , Navigate} from 'react-router-d
 import { Provider } from 'react-redux';
 import {store} from './store/store'
 import './App.css';
-
-
+import LoginPage from './components/LoginPage';
+import SignupPage from './components/SignupPage';
+import HomePage from './components/HomePage';
 
 //Labor Work Flow
 import MainPage from './components/WorkerFlow/MainPage';
@@ -24,8 +25,8 @@ import ApplyPage from  './components/WorkerFlow/ApplyingPage'
 import EmployeeDetails from './components/ContractorFlow/EmployeeDetails'
 import ProjectApplications  from './components/ContractorFlow/ProjectDetails'
 import ProjectDetails  from './components/ContractorFlow/ProjectDetails'
-// import ProjectList  from './components/ContractorFlow/ProjectList'
-import AddProjectStep from './components/ContractorFlow/AddProjectStep'
+import ProjectList  from './components/ContractorFlow/ProjectList'
+// import AddProjectStep from './components/ContractorFlow/AddProjectStep'
 import  AddProjectStep2  from './components/ContractorFlow/AddProjectStep2'
 import AddProjectStep3  from './components/ContractorFlow/AddProjectStep3'
 import ContractorMainPage from './components/ContractorFlow/ContractorMainPage'
@@ -33,6 +34,12 @@ import ContractorMainPage from './components/ContractorFlow/ContractorMainPage'
 
 
 import ContractPage from './components/ContractPage';
+
+
+// Machine  Flow    i haven't created yet  but will made it soon
+import MachineMainPage from './components/MachineFlow/MachineMainPage';
+
+
 
 function App(){
   return (
@@ -46,6 +53,12 @@ function App(){
 
         <Routes>
          {/* Worker Flow Routes */}
+
+          <Route  path='/login'  element = {<LoginPage />}    />
+          <Route  path='/signup'  element = {<SignupPage />}    />
+          <Route path="/" element={<HomePage />} />
+
+
          <Route path="/labor">
             <Route path="main-page" element={<MainPage />} />
             <Route path="applied" element={<AppliedPage />} />
@@ -60,17 +73,21 @@ function App(){
           {/* Contractor Flow Routes */}
           <Route path="/contractor">
             <Route path="main-page" element={<ContractorMainPage />} />
-            <Route path="add-project" element={<AddProjectStep />} />
+            {/* <Route path="add-project" element={<AddProjectStep />} /> */}
             <Route path="add-project-step2" element={<AddProjectStep2 />} />
             <Route path="add-project-step3" element={<AddProjectStep3 />} />
             <Route path="employee-details" element={<EmployeeDetails />} />
             <Route path="project-applications" element={<ProjectApplications />} />
             <Route path="project-details" element={<ProjectDetails />} />
-          {/*  <Route path="project-list" element={<ProjectList />} />   */}
+           <Route path="project-list" element={<ProjectList />} />  
           </Route>
 
-          <Route path="/" element={<Navigate to="/labor/main-page" />} />
+          {/* <Route path="/" element={<Navigate to="/labor/main-page" />} /> */}
 
+          {/* Machine Flow Routes */}
+          <Route path="/machine">
+            <Route path="main-page" element={<MachineMainPage />} />
+          </Route>
 
         </Routes>
       </Router>

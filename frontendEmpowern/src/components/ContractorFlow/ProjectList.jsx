@@ -2,7 +2,8 @@ import { useEffect, useState, useCallback } from 'react';
 import { Button, List, Typography, Card, Spin, Empty, Modal, message } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { getJobsByPostedById, deleteJob } from '../../calls/jobCalls';
+// import { getJobsByPostedById, deleteJob } from '../../calls/jobCalls';
+import { jobService } from '../../calls/jobCalls';
 import { setProjectId } from '../../store/appSlice';
 
 const { Text, Title } = Typography;
@@ -16,7 +17,7 @@ const ProjectList = () => {
 
           const loadProjects = useCallback(async () => {
             try {
-              const data = await getJobsByPostedById(contractorId);
+              const data = await jobService.getJobById(contractorId);  // it is saying getJobByPostedId   but i have to use getJobById
               setProjects(data);
             } catch (error) {
               console.error('Error loading projects:', error);
@@ -54,7 +55,7 @@ const ProjectList = () => {
       cancelText: 'No',
       onOk: async () => {
         try {
-          await deleteJob(projectId);
+          await jobService.delete(projectId);    //deleteJobById
           message.success('Project deleted successfully');
           loadProjects();
         } catch (error) {
