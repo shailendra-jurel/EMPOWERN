@@ -10,22 +10,60 @@ const userTypes = {
 };
 
 const userSchema = new Schema({
-  firstName: { type: String, },
-  lastName: { type: String,  },
-
-  email: { type: String, unique: true, required: true },
-  password: { type: String },
-  googleId: { type: String },
-  facebookId: { type: String },
-  instagramId: { type: String },
-  createdAt: { type: Date, default: Date.now },
-
-  mobileNumber : { type: String, required: true },
-  userType: { type: String,  enum: Object.values(userTypes) },
-  location: { type: String,  },
-  token: { type: String },
+  name: {
+    type: String,
+    required: [true, 'Name is required'],
+    trim: true
+  },
+  email: {
+    type: String,
+    required: [true, 'Email is required'],
+    unique: true,
+    lowercase: true,
+    trim: true,
+    validate: {
+      validator: function(v) {
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+      },
+      message: props => `${props.value} is not a valid email!`
+    }
+  },
+  password: {
+    type: String,
+    required: [true, 'Password is required'],
+    minlength: [6, 'Password must be at least 6 characters']
+  },
+  phone: {
+    type: String,
+    unique: true,
+    sparse: true,
+    trim: true,
+    validate: {
+      validator: function(v) {
+        return !v || /^\d{10}$/.test(v);
+      },
+      message: props => `${props.value} is not a valid phone number!`
+    }
+  },
+  userType: {
+    type: String,
+    required: true,
+    enum: {
+      values: ['worker', 'contractor'],
+      message: 'User type must be either worker or contractor'
+    }
+  },
+  profileStatus: {
+    type: String,
+    enum: ['incomplete', 'complete'],
+    default: 'incomplete'
+  },
+  googleId: String,
+  profilePicture: String
+}, {
+  timestamps: true
 });
 
 const User = mongoose.model('User', userSchema);
 
-export default   User;
+export default User;

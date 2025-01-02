@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import  { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { auth } from '../firebase';
 import axios from 'axios';
+import authService from '../services/api/authService';  // this is frontend  but  here we have our workdone through backend
 
 const SignupPage = () => {
   const navigate = useNavigate();
@@ -19,6 +20,10 @@ const SignupPage = () => {
     otp: '',
   });
 
+  const api = axios.create({
+    baseURL: 'http://localhost:5000' // Your backend server port
+  });
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -31,19 +36,25 @@ const SignupPage = () => {
   const handleGoogleSignup = async () => {
     try {
       setIsLoading(true);
+      setError('');
+      
       const provider = new GoogleAuthProvider();
       const result = await signInWithPopup(auth, provider);
       const token = await result.user.getIdToken();
       
       // Send token to your backend
-      const response = await axios.post('/api/auth/google-signup', {
+      const response = await authService.googleSignup({
         token,
         userType: formData.userType
       });
       
-      localStorage.setItem('token', response.data.token);
-      navigate('/dashboard');
+      if (response.success) {
+        // Redirect based on user type
+        const redirectPath = formData.userType === 'worker' ? '/labor/main-page' : '/contractor/main-page';
+        navigate(redirectPath);
+      }
     } catch (error) {
+      console.error('Google signup error:', error);
       setError('Google signup failed. Please try again.');
     } finally {
       setIsLoading(false);
@@ -53,7 +64,7 @@ const SignupPage = () => {
   const handlePhoneVerification = async () => {
     try {
       setIsLoading(true);
-      const response = await axios.post('/api/auth/send-otp', {
+      const response = await api.post('/api/auth/send-otp', {
         phone: formData.phone
       });
       setStep('otp');
@@ -67,32 +78,52 @@ const SignupPage = () => {
   const handleSignup = async (e) => {
     e.preventDefault();
     
-    // Basic validation
+    // Validate form data
+    if (!formData.fullName || !formData.email || !formData.password || !formData.userType) {
+      setError('Please fill in all required fields');
+      return;
+    }
+
+    // Validate password match
     if (formData.password !== formData.confirmPassword) {
       setError('Passwords do not match');
       return;
     }
 
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      setError('Please enter a valid email address');
+      return;
+    }
+
+    // Validate phone number (optional)
+    if (formData.phone && !/^\d{10}$/.test(formData.phone)) {
+      setError('Please enter a valid 10-digit phone number');
+      return;
+    }
+
     try {
       setIsLoading(true);
-      const response = await axios.post('/api/auth/signup', {
-        fullName: formData.fullName,
-        email: formData.email,
-        phone: formData.phone,
+      setError('');
+      
+      const response = await authService.signup({
+        fullName: formData.fullName.trim(),
+        email: formData.email.trim().toLowerCase(),
         password: formData.password,
+        phone: formData.phone.trim(),
         userType: formData.userType
       });
 
-      if (response.data.success) {
-        // If phone verification is required
-        await handlePhoneVerification();
-      } else {
-        // Direct signup success
-        localStorage.setItem('token', response.data.token);
-        navigate('/dashboard');
+      if (response.success) {
+        // Redirect based on user type
+        const redirectPath = formData.userType === 'worker' ? '/labor/main-page' : '/contractor/main-page';
+        navigate(redirectPath);
       }
     } catch (error) {
-      setError(error.response?.data?.message || 'Signup failed. Please try again.');
+      setError(error.message || 'Signup failed. Please try again.');
+
+      console.error('Signup error:', error);
     } finally {
       setIsLoading(false);
     }
@@ -101,14 +132,14 @@ const SignupPage = () => {
   const handleOtpVerification = async () => {
     try {
       setIsLoading(true);
-      const response = await axios.post('/api/auth/verify-otp', {
+      const response = await api.post('/api/auth/verify-otp', {
         phone: formData.phone,
         otp: formData.otp
       });
 
       if (response.data.success) {
         localStorage.setItem('token', response.data.token);
-        navigate('/dashboard');
+        navigate('/main-page');
       }
     } catch (error) {
       setError('Invalid verification code. Please try again.');
@@ -261,7 +292,7 @@ const SignupPage = () => {
 
           <div className="mt-6 text-center text-sm">
             <span className="text-gray-600">Already have an account?</span>{' '}
-            <Link to="/" className="text-blue-600 hover:text-blue-500">
+            <Link to="/login" className="text-blue-600 hover:text-blue-500">
               Log in
             </Link>
           </div>

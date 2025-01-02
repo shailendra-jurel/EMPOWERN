@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { auth } from '../firebase';
-import axios from 'axios';
+import { axiosInstance } from '../services/api/axiosInstance';
 
 const LoginPage = () => {
   const navigate = useNavigate();
@@ -33,10 +33,15 @@ const LoginPage = () => {
       const result = await signInWithPopup(auth, provider);
       const token = await result.user.getIdToken();
       
-      // Send token to your backend
-      const response = await axios.post('/api/auth/google', { token });
-      localStorage.setItem('token', response.data.token);
-      navigate('/dashboard');
+      const response = await axiosInstance.post('/api/auth/google-signup', {
+        token,
+        userType: 'worker' // You might want to add a way to select user type for Google login
+      });
+      
+      if (response.data.success) {
+        localStorage.setItem('token', response.data.data.token);
+        navigate(response.data.data.userType === 'worker' ? '/' : '/');
+      }
     } catch (error) {
       setError('Google login failed. Please try again.');
     } finally {
@@ -47,10 +52,10 @@ const LoginPage = () => {
   const handlePhoneSubmit = async () => {
     try {
       setIsLoading(true);
-      const response = await axios.post('/api/auth/send-otp', {
-        phone: formData.phone
-      });
-      setStep('otp');
+      const response = await axiosInstance.post('/api/auth/send-otp', { phone: formData.phone });
+      if (response.data.success) {
+        setStep('otp');
+      }
     } catch (error) {
       setError('Failed to send OTP. Please try again.');
     } finally {
@@ -61,13 +66,13 @@ const LoginPage = () => {
   const handleOtpVerification = async () => {
     try {
       setIsLoading(true);
-      const response = await axios.post('/api/auth/verify-otp', {
+      const response = await axiosInstance.post('/api/auth/verify-otp', {
         phone: formData.phone,
         otp: formData.otp
       });
       localStorage.setItem('token', response.data.token);
       setStep('success');
-      setTimeout(() => navigate('/dashboard'), 1500);
+      setTimeout(() => navigate('/'), 1500);
     } catch (error) {
       setError('Invalid OTP. Please try again.');
     } finally {
@@ -78,12 +83,12 @@ const LoginPage = () => {
   const handleEmailLogin = async () => {
     try {
       setIsLoading(true);
-      const response = await axios.post('/api/auth/login', {
+      const response = await axiosInstance.post('/api/auth/login', {
         email: formData.email,
         password: formData.password
       });
       localStorage.setItem('token', response.data.token);
-      navigate('/dashboard');
+      navigate(response.data.data.userType === 'worker' ? '/' : '/');
     } catch (error) {
       setError('Invalid email or password.');
     } finally {
@@ -107,7 +112,7 @@ const LoginPage = () => {
               className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors"
               disabled={isLoading}
             >
-              <img src="/google-icon.svg" alt="Google" className="h-5 w-5 mr-2" />
+              <img src="../assests/google-icon.svg" alt="Google" className="h-5 w-5 mr-2" />
               Continue with Google
             </button>
           </div>

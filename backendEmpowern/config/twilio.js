@@ -1,5 +1,6 @@
 // config/twilio.js
 import dotenv from 'dotenv';
+import twilio from 'twilio';
 dotenv.config();
 
 const twilioConfig = {
@@ -25,4 +26,14 @@ const validateTwilioConfig = () => {
   }
 };
 
-export { twilioConfig, validateTwilioConfig };
+let twilioClient;
+try {
+  validateTwilioConfig();
+  twilioClient = twilio(twilioConfig.accountSid, twilioConfig.authToken);
+} catch (error) {
+  console.error('Twilio Configuration Error:', error.message);
+  // Don't exit the process, just disable Twilio features
+  twilioClient = null;
+}
+
+export { twilioConfig, validateTwilioConfig, twilioClient };

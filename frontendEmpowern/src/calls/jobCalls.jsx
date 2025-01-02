@@ -8,9 +8,9 @@ import Logger from '../utilities/logger';
  */
 const JOB_API_CONFIG = {
     endpoints: {
-        base: '/api/jobs', // Remove hardcoded URL, use relative path
+        base: '/api/jobs',
         getAll: '/',
-        getById: '/getById', // Add slash at the beginning
+        getById: '/getById',
         create: '/create',
         update: '/update',
         delete: '/delete',
