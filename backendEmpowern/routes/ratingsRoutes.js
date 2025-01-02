@@ -1,6 +1,6 @@
 import express from 'express';
 const router = express.Router();
-import ratingsController from '../controllers/ratingsController.js';
+import ratingsController from '../controllers/RatingsController.js';
 
 router.post('/', ratingsController.createRating);
 router.get('/', ratingsController.getAllRatings);

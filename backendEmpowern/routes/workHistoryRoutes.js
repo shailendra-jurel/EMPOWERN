@@ -1,6 +1,6 @@
 import express from 'express';
 const router = express.Router();
-import workHistoryController from '../controllers/workHistoryController.js';
+import workHistoryController from '../controllers/WorkHistoryController.js';
 
 router.post('/', workHistoryController.createWorkHistory);
 router.get('/', workHistoryController.getAllWorkHistories);

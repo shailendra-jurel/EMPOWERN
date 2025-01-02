@@ -1,6 +1,6 @@
 import express from 'express';
 const router = express.Router();
-import labourWorkerController from '../controllers/labourWorkerController.js';
+import labourWorkerController from '../controllers/LabourWorkerController.js';
 
 router.post('/create', labourWorkerController.createLabourWorker);
 router.get('/getAll', labourWorkerController.getAllLabourWorkers);
