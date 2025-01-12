@@ -18,10 +18,7 @@ import AdditionalInfo from './components/WorkerFlow/AdditionalInfo';
 import ApplyPage from  './components/WorkerFlow/ApplyingPage'
 // import WorkStatusPage from './components/WorkerFlow/WorkStatusPage';
 
-
 //  Contractor  Work Flow
-
-
 import EmployeeDetails from './components/ContractorFlow/EmployeeDetails'
 import ProjectApplications  from './components/ContractorFlow/ProjectDetails'
 import ProjectDetails  from './components/ContractorFlow/ProjectDetails'
@@ -30,11 +27,7 @@ import ProjectList  from './components/ContractorFlow/ProjectList'
 import  AddProjectStep2  from './components/ContractorFlow/AddProjectStep2'
 import AddProjectStep3  from './components/ContractorFlow/AddProjectStep3'
 import ContractorMainPage from './components/ContractorFlow/ContractorMainPage'
-
-
-
 import ContractPage from './components/ContractPage';
-
 
 // Machine  Flow    i haven't created yet  but will made it soon
 import MachineMainPage from './components/MachineFlow/MachineMainPage';
@@ -49,15 +42,11 @@ function App(){
     // </div>
     <Provider  store = {store}>
       <Router>
-
-
         <Routes>
          {/* Worker Flow Routes */}
-
           <Route  path='/login'  element = {<LoginPage />}    />
           <Route  path='/signup'  element = {<SignupPage />}    />
           <Route path="/" element={<HomePage />} />
-
 
          <Route path="/labor">
             <Route path="main-page" element={<MainPage />} />

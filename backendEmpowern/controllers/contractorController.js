@@ -21,7 +21,7 @@ const getAllContractors = async (req, res) => {
 
 const getContractorById = async (req, res) => {
     console.log('Fetching contractor with id:', req.params.id);
-    console.log('reached here for the contractor id')
+    console.log('reached here for the contractor id written in contractorController');
     try {
         const contractor = await Contractor.findById(req.params.id).populate('userId');
         if (!contractor) {

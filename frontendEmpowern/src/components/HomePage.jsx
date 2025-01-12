@@ -6,7 +6,7 @@ const HomePage = () => {
   return (
     <div className="bg-gradient-to-br from-blue-50 via-white to-blue-100 min-h-screen flex flex-col">
       {/* Navbar */}
-      <header className="fixed top-0 left-0 right-0 bg-gradient-to-r from-blue-700 via-blue-600 to-blue-500 shadow-lg z-50">
+      <header className="fixed top-0 left-0 right-0 bg-gradient-to-r from-blue-700 via-blue-800 to-blue-500 shadow-xl z-50">
         <div className="container mx-auto px-4 sm:px-6 py-4 flex justify-between items-center">
           <h1 className="text-xl sm:text-2xl font-bold text-white">EmpowerWork</h1>
           <nav className="hidden sm:flex space-x-4">
@@ -38,7 +38,7 @@ const HomePage = () => {
             to="/labor/main-page"
             className="group flex flex-col items-center bg-gradient-to-r from-blue-100 via-blue-50 to-blue-100 p-6 rounded-lg shadow-md hover:shadow-lg transform hover:scale-105 transition-all"
           >
-            <MdOutlineEngineering className="text-blue-600 text-6xl mb-3 group-hover:text-blue-700" />
+            <MdOutlineEngineering className="text-blue-600 text-6xl mb-3 group-hover:text-blue-800" />
             <h3 className="text-base sm:text-lg font-semibold text-blue-800 group-hover:text-blue-900">Search for Work</h3>
             <p className="text-sm text-gray-600 mt-2 text-center">
               Discover job opportunities, apply easily, and manage your tasks efficiently.

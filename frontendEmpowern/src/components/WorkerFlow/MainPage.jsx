@@ -6,34 +6,24 @@ import {
   FilterOutlined, 
   EllipsisOutlined 
 } from '@ant-design/icons';
+const { Title, Text, Paragraph } = Typography;
+
+
 import { useSelector } from 'react-redux';
-// import { getJobAssignmentsByWorkerId } from '../../calls/JobAssignmentCalls';
 import { jobAssignmentService } from '../../calls/JobAssignmentCalls';
 import debounce from 'lodash/debounce';
 import { useNavigate } from 'react-router-dom';
 
 // Ant Design Typography components
-const { Title, Text, Paragraph } = Typography;
-
-/**
- * MainPage Component: A dashboard for workers to manage their job assignments.
- * 
- * Features:
- * - Fetches job assignments categorized into Applied, Ongoing, and Completed.
- * - Allows sorting and filtering of job listings.
- * - Displays jobs with hover effects, contextual menus, and a responsive layout.
- */
 const MainPage = () => {
-  // Fetch the worker ID from the global Redux store
   const { workerId } = useSelector((state) => state.app.workerId);
-
-  const navigate = useNavigate(); // Navigation hook for routing
+  const navigate = useNavigate(); 
 
   // State to store categorized job data
   const [jobData, setJobData] = useState({
-    applied: [],  // Jobs that the worker has applied for
-    ongoing: [],  // Jobs that are currently in progress
-    completed: [] // Jobs that are finished
+    applied: [],  
+    ongoing: [],  
+    completed: [] 
   });
 
   // State for loading indicator and error messages
@@ -53,11 +43,9 @@ const MainPage = () => {
   /**
    * Fetch job assignments for the worker from the server.
    * - Categorizes jobs into Applied, Ongoing, and Completed.
-   * - Handles errors and loading states.
    */
   const fetchJobAssignments = useCallback(async () => {
     if (!workerId) return;
-
     setIsLoading(true); // Show loading spinner
     setError(null); // Reset error state
 
@@ -268,7 +256,7 @@ const MainPage = () => {
 
   // Main dashboard UI
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-blue-100 to-blue-100 p-6">
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row justify-between items-center mb-6 space-y-4 md:space-y-0">
           <Title level={2} className="mb-0">Job Assignment Dashboard</Title>

@@ -1,5 +1,4 @@
 // src/utils/twilio.js
-
 // Example function to send OTP via your backend API
 export const sendOtp = async (phoneNumber) => {
     try {

@@ -1,7 +1,5 @@
 
 import User from '../models/User.js';
-// const bcrypt = require('bcryptjs');
-// const jwt = require('jsonwebtoken');
 
 const createUser = async (req, res) => {
     console.log('req.body', req.body);

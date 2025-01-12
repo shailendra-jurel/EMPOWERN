@@ -12,7 +12,7 @@ const userTypes = {
 const userSchema = new Schema({
   name: {
     type: String,
-    required: [true, 'Name is required'],
+    required: [true, 'Name is required'], 
     trim: true
   },
   email: {
@@ -36,7 +36,7 @@ const userSchema = new Schema({
   phone: {
     type: String,
     unique: true,
-    sparse: true,
+    sparse: true, 
     trim: true,
     validate: {
       validator: function(v) {

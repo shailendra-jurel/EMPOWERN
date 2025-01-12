@@ -1,8 +1,4 @@
-
-
-
 // utilities/logger.js
-
 export const Logger = {
     info: (message, metadata = {}) => {
         const timestamp = new Date().toISOString();
@@ -24,5 +20,4 @@ export const Logger = {
         console.debug(`${timestamp} [DEBUG]: ${message}`, metadata);
     }
 };
-
 export default Logger;
