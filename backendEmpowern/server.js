@@ -37,7 +37,7 @@ try {
     // Don't exit the process, just disable Twilio features
     twilioClient = null;
 }
-0
+
 // Middleware
 app.use(cors({
     origin: ['http://localhost:5173', 'http://localhost:5176'], 

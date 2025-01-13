@@ -50,62 +50,71 @@ const MainPage = () => {
     setError(null); // Reset error state
 
     try {
-      // API call to fetch job assignments for the current worker
-      const jobAssignments = await jobAssignmentService.getByWorkerId(workerId);
+      // Fetch all assignments with detailed information
+      const assignments = await jobAssignmentService.getByWorkerId(workerId, {
+        includeJob: true,
+        includeHistory: true
+      });
 
       if (!isMounted.current) return;
 
-      // Categorize jobs into Applied, Ongoing, and Completed based on their status
-      const categorizedJobs = jobAssignments.reduce((acc, assignment) => {
-        switch (assignment.job.status) {
-          case 'Open':
+      // Enhanced categorization based on status
+      const categorizedJobs = assignments.reduce((acc, assignment) => {
+        // Map API status to display categories
+        switch (assignment.status) {
+          case 'APPLIED':
+          case 'PENDING':
             acc.applied.push(assignment);
             break;
-          case 'In progress':
+          case 'ASSIGNED':
+          case 'IN_PROGRESS':
             acc.ongoing.push(assignment);
             break;
-          case 'Completed':
+          case 'COMPLETED':
             acc.completed.push(assignment);
             break;
+          // Add more status mappings as needed
           default:
             break;
         }
         return acc;
       }, { applied: [], ongoing: [], completed: [] });
 
-      // Sort and limit the number of jobs displayed
+      // Enhanced sorting function with more options
       const sortJobs = (jobs) => jobs
         .sort((a, b) => {
-          // Sorting based on selected filter options
           switch (filterOptions.sortBy) {
             case 'payRate':
               return filterOptions.orderBy === 'asc' 
-                ? a.job.payRate - b.job.payRate
-                : b.job.payRate - a.job.payRate;
-            default: // date
-              return filterOptions.orderBy === 'asc' 
-                ? new Date(a.job.createdAt) - new Date(b.job.createdAt)
-                : new Date(b.job.createdAt) - new Date(a.job.createdAt);
+                ? a.hourlyRate - b.hourlyRate
+                : b.hourlyRate - a.hourlyRate;
+            case 'date':
+              return filterOptions.orderBy === 'asc'
+                ? new Date(a.createdAt) - new Date(b.createdAt)
+                : new Date(b.createdAt) - new Date(a.createdAt);
+            case 'status':
+              return a.status.localeCompare(b.status);
+            default:
+              return 0;
           }
         })
-        .slice(0, 5); // Show up to 5 jobs per category
+        .slice(0, 5);
 
-      // Update job data state with sorted jobs
       setJobData({
         applied: sortJobs(categorizedJobs.applied),
         ongoing: sortJobs(categorizedJobs.ongoing),
         completed: sortJobs(categorizedJobs.completed)
       });
+      
     } catch (error) {
       if (isMounted.current) {
-        // Display error message if the API call fails
-        const errorMessage = error.response?.data?.message || 'Network error occurred';
+        const errorMessage = error.response?.data?.message || 'Failed to fetch assignments';
         setError(errorMessage);
-        message.error(errorMessage, 3); // Show error notification
+        message.error(errorMessage);
       }
     } finally {
       if (isMounted.current) {
-        setIsLoading(false); // Hide loading spinner
+        setIsLoading(false);
       }
     }
   }, [workerId, filterOptions]);
@@ -137,14 +146,23 @@ const MainPage = () => {
   const renderJobAssignment = useCallback((assignment) => {
     const jobMenu = (
       <Menu>
-        <Menu.Item key="1">View Details</Menu.Item>
-        <Menu.Item key="2">Contact Employer</Menu.Item>
+        <Menu.Item key="details" onClick={() => navigate(`/labor/job/${assignment.jobId}`)}>
+          View Details
+        </Menu.Item>
+        <Menu.Item key="timeline" onClick={() => navigate(`/labor/job/${assignment.jobId}/timeline`)}>
+          View Timeline
+        </Menu.Item>
+        {assignment.status === 'APPLIED' && (
+          <Menu.Item key="withdraw" onClick={() => handleWithdrawApplication(assignment._id)}>
+            Withdraw Application
+          </Menu.Item>
+        )}
       </Menu>
     );
 
     return (
       <Card
-        key={assignment.job._id}
+        key={assignment._id}
         hoverable
         extra={
           <Dropdown overlay={jobMenu} trigger={['click']}>
@@ -154,26 +172,36 @@ const MainPage = () => {
         className="mb-4 transition-all duration-300 hover:shadow-lg"
       >
         <Card.Meta 
-          title={assignment.job.name} // Job name
+          title={assignment.job?.name}
           description={
             <>
               <Paragraph ellipsis={{ rows: 2 }}>
-                <Text strong>Job Type:</Text> {assignment.job.jobType}
+                <Text strong>Job Type:</Text> {assignment.job?.jobType}
               </Paragraph>
-              <div className="flex justify-between">
+              <div className="flex justify-between items-center">
                 <Text type="secondary">
-                  <Text strong>Location:</Text> {assignment.job.location}
+                  <Text strong>Location:</Text> {assignment.job?.location}
                 </Text>
                 <Text type="success">
-                  <Text strong>Pay:</Text> ${assignment.job.payRate}/hr
+                  <Text strong>Pay:</Text> ₹{assignment.hourlyRate}/hr
                 </Text>
+              </div>
+              <div className="mt-2">
+                <Text type="secondary">
+                  Status: <Text strong>{assignment.status}</Text>
+                </Text>
+                {assignment.lastUpdated && (
+                  <Text type="secondary" className="ml-4">
+                    Updated: {new Date(assignment.lastUpdated).toLocaleDateString()}
+                  </Text>
+                )}
               </div>
             </>
           }
         />
       </Card>
     );
-  }, []);
+  }, [navigate]);
 
   /**
    * Render a category card (Applied, Ongoing, or Completed) with jobs.

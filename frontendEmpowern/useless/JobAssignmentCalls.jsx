@@ -1,4 +1,4 @@
-import axios from 'axios';
+import { axiosInstance } from './axiosInstance';
 import { handleApiError } from '../utilities/api/errors';
 import Logger from '../utilities/logger';
 
@@ -7,7 +7,7 @@ import Logger from '../utilities/logger';
  */
 const ASSIGNMENT_API_CONFIG = {
     endpoints: {
-        base: '/api/job-assignments',
+        base: '/api/jobAssignment',
         getById: id => `/get/${id}`,
         getAll: '/getAll',
         create: '/create',
@@ -26,9 +26,7 @@ const ASSIGNMENT_API_CONFIG = {
         pauseResume: id => `/pauseResume/${id}`,
         milestones: id => `/milestones/${id}`,
         feedback: id => `/feedback/${id}`,
-        timesheet: id => `/timesheet/${id}`,
-        report: id => `/report/${id}`,
-        workers: jobId => `/${jobId}/workers`
+        timesheet: id => `/timesheet/${id}`
     },
     status: {
         PENDING: 'PENDING',
@@ -57,19 +55,13 @@ const ASSIGNMENT_API_CONFIG = {
  */
 class JobAssignmentService {
     constructor() {
-        this.axios = axios.create({
-            baseURL: ASSIGNMENT_API_CONFIG.endpoints.base,
-        });
+        this.axios = axiosInstance;
         this.config = ASSIGNMENT_API_CONFIG;
     }
 
     /**
      * Base API call handler with error management and logging
      * @private
-     * @param {Function} apiCall - The API call to execute
-     * @param {string} errorMessage - Error message for logging
-     * @param {Object} options - Additional options for error handling
-     * @returns {Promise<any>} API response data
      */
     async #performApiCall(apiCall, errorMessage, options = {}) {
         const { throwError = true, defaultValue = null } = options;
@@ -89,8 +81,6 @@ class JobAssignmentService {
     /**
      * Validate assignment data
      * @private
-     * @param {Object} data - Assignment data to validate
-     * @throws {Error} If validation fails
      */
     #validateAssignmentData(data) {
         const requiredFields = ['jobId', 'workerId', 'hourlyRate', 'estimatedDuration'];
@@ -116,18 +106,16 @@ class JobAssignmentService {
     /**
      * Get assignment by ID with detailed information
      * @param {string} id - Assignment ID
-     * @param {Object} options - Additional options for including related data
+     * @param {Object} options - Additional options
      * @returns {Promise<Object>} Assignment details
      */
     async getById(id, options = {}) {
-        if (!id) throw new Error('Job assignment ID is required');
         const { includeJob = true, includeWorker = true, includeHistory = false } = options;
-        
         return this.#performApiCall(
             () => this.axios.get(this.config.endpoints.getById(id), {
                 params: { includeJob, includeWorker, includeHistory }
             }),
-            `Error fetching job assignment with ID ${id}`
+            `Fetching job assignment ${id}`
         );
     }
 
@@ -163,7 +151,7 @@ class JobAssignmentService {
                     includeDetails
                 }
             }),
-            'Error fetching all job assignments'
+            'Fetching all job assignments'
         );
     }
 
@@ -188,7 +176,7 @@ class JobAssignmentService {
 
         return this.#performApiCall(
             () => this.axios.post(this.config.endpoints.create, enrichedData),
-            'Error creating new job assignment'
+            'Creating new job assignment'
         );
     }
 
@@ -199,9 +187,6 @@ class JobAssignmentService {
      * @returns {Promise<Object>} Updated assignment
      */
     async update(id, updateData) {
-        if (!id) throw new Error('Job assignment ID is required for update');
-        if (!updateData || typeof updateData !== 'object') throw new Error('Invalid data for job assignment update');
-
         const currentAssignment = await this.getById(id);
         
         const enrichedUpdate = {
@@ -220,26 +205,12 @@ class JobAssignmentService {
 
         return this.#performApiCall(
             () => this.axios.put(this.config.endpoints.update(id), enrichedUpdate),
-            `Error updating job assignment ${id}`
-        );
-    }
-
-    /**
-     * Delete a job assignment by ID
-     * @param {string} id - Assignment ID
-     * @returns {Promise<Object>} Deletion confirmation
-     */
-    async delete(id) {
-        if (!id) throw new Error('Job assignment ID is required for deletion');
-        return this.#performApiCall(
-            () => this.axios.delete(this.config.endpoints.delete(id)),
-            `Error deleting job assignment ${id}`
+            `Updating job assignment ${id}`
         );
     }
 
     /**
      * Handle assignment workflow transitions
-     * @private
      * @param {string} id - Assignment ID
      * @param {string} action - Workflow action
      * @param {Object} data - Additional data
@@ -344,6 +315,30 @@ class JobAssignmentService {
     }
 
     /**
+     * Get assignments by job ID with filtering
+     * @param {string} jobId - Job ID
+     * @param {Object} options - Filter options
+     */
+    async getByJobId(jobId, options = {}) {
+        return this.#performApiCall(
+            () => this.axios.get(this.config.endpoints.getByJobId(jobId), { params: options }),
+            `Fetching assignments for job ${jobId}`
+        );
+    }
+
+    /**
+     * Get assignments by worker ID with filtering
+     * @param {string} workerId - Worker ID
+     * @param {Object} options - Filter options
+     */
+    async getByWorkerId(workerId, options = {}) {
+        return this.#performApiCall(
+            () => this.axios.get(this.config.endpoints.getByWorkerId(workerId), { params: options }),
+            `Fetching assignments for worker ${workerId}`
+        );
+    }
+
+    /**
      * Generate assignment report
      * @param {string} id - Assignment ID
      * @param {Object} options - Report options
@@ -397,163 +392,6 @@ class JobAssignmentService {
         const totalHours = this.#calculateTotalHours(assignment);
         return totalHours * assignment.hourlyRate;
     }
-
-    /**
-     * Assign a worker to a job
-     * @param {string} jobId - Job ID
-     * @param {string} workerId - Worker ID
-     */
-    async assignWorker(jobId, workerId) {
-        if (!jobId || !workerId) throw new Error('Job ID and Worker ID are required for assignment');
-        return this.#performApiCall(
-            () => this.axios.post(`/${jobId}/assign`, { workerId }),
-            `Error assigning worker ${workerId} to job ${jobId}`
-        );
-    }
-
-    /**
-     * Get assignments by job ID with filtering
-     * @param {string} jobId - Job ID
-     * @param {Object} options - Filter options
-     */
-    async getByJobId(jobId, options = {}) {
-        return this.#performApiCall(
-            () => this.axios.get(this.config.endpoints.getByJobId(jobId), { params: options }),
-            `Fetching assignments for job ${jobId}`
-        );
-    }
-    /**
-     * Get assignments by worker ID with filtering
-     * @param {string} workerId - Worker ID
-     * @param {Object} options - Filter options
-     */
-    async getByWorkerId(workerId, options = {}) {
-        return this.#performApiCall(
-            () => this.axios.get(this.config.endpoints.getByWorkerId(workerId), { params: options }),
-            `Fetching assignments for worker ${workerId}`
-        );
-    }
-/**
-     * Get all workers assigned to a specific job
-     * @param {string} jobId - Job ID
-     * @returns {Promise<Array>} List of assigned workers
-     */
-async getAssignedWorkers(jobId) {
-    if (!jobId) throw new Error('Job ID is required to fetch assigned workers');
-    return this.#performApiCall(
-        () => this.axios.get(this.config.endpoints.workers(jobId)),
-        `Error fetching workers assigned to job ${jobId}`
-    );
-}
-
-/**
- * Withdraw from assignment
- * @param {string} id - Assignment ID
- * @param {Object} withdrawalData - Withdrawal details including reason
- * @returns {Promise<Object>} Updated assignment
- */
-async withdraw(id, withdrawalData = {}) {
-    return this.#handleWorkflowTransition(id, 'withdraw', withdrawalData);
-}
-/**
- * Extend assignment duration
- * @param {string} id - Assignment ID
- * @param {Object} extensionData - Extension details including new duration and reason
- * @returns {Promise<Object>} Updated assignment
- */
-async extend(id, extensionData) {
-    if (!extensionData.newDuration) {
-        throw new Error('New duration is required for extension');
-    }
-    return this.#handleWorkflowTransition(id, 'extend', extensionData);
-}
-
-/**
- * Toggle pause/resume status of assignment
- * @param {string} id - Assignment ID
- * @param {Object} pauseData - Pause/resume details including reason
- * @returns {Promise<Object>} Updated assignment
- */
-async togglePauseResume(id, pauseData = {}) {
-    return this.#handleWorkflowTransition(id, 'pauseResume', pauseData);
-}
-
-/**
- * Raise a dispute for an assignment
- * @param {string} id - Assignment ID
- * @param {Object} disputeData - Dispute details including reason and evidence
- * @returns {Promise<Object>} Updated assignment with dispute information
- */
-async raiseDispute(id, disputeData) {
-    if (!disputeData.reason) {
-        throw new Error('Dispute reason is required');
-    }
-    return this.#handleWorkflowTransition(id, 'dispute', disputeData);
-}
-
-/**
- * Update assignment progress
- * @param {string} id - Assignment ID
- * @param {Object} progressData - Progress details including percentage and notes
- * @returns {Promise<Object>} Updated assignment
- */
-async updateProgress(id, progressData) {
-    if (!progressData.percentage || progressData.percentage < 0 || progressData.percentage > 100) {
-        throw new Error('Valid progress percentage (0-100) is required');
-    }
-    return this.#performApiCall(
-        () => this.axios.post(this.config.endpoints.progress(id), {
-            ...progressData,
-            updatedAt: new Date().toISOString()
-        }),
-        `Updating progress for assignment ${id}`
-    );
-}
-/**
- * Rate assignment experience
- * @param {string} id - Assignment ID
- * @param {Object} ratingData - Rating details including score and review
- * @returns {Promise<Object>} Updated assignment with rating
- */
-async submitRating(id, ratingData) {
-    if (!ratingData.score || ratingData.score < 1 || ratingData.score > 5) {
-        throw new Error('Valid rating score (1-5) is required');
-    }
-    return this.#performApiCall(
-        () => this.axios.post(this.config.endpoints.rate(id), {
-            ...ratingData,
-            submittedAt: new Date().toISOString()
-        }),
-        `Submitting rating for assignment ${id}`
-    );
-}
-
-/**
- * Export assignment data in specified format
- * @param {string} id - Assignment ID
- * @param {string} format - Export format (pdf, csv, json)
- * @returns {Promise<Blob>} Exported data in requested format
- */
-async exportAssignment(id, format = 'pdf') {
-    const supportedFormats = ['pdf', 'csv', 'json'];
-    if (!supportedFormats.includes(format)) {
-        throw new Error(`Unsupported export format. Supported formats: ${supportedFormats.join(', ')}`);
-    }
-
-    const assignment = await this.getById(id, { includeHistory: true });
-    const report = await this.generateReport(id);
-
-    return this.#performApiCall(
-        () => this.axios.post(`/export/${id}`, {
-            format,
-            data: { assignment, report },
-            timestamp: new Date().toISOString()
-        }, {
-            responseType: 'blob'
-        }),
-        `Exporting assignment ${id} as ${format}`
-    );
-}
 }
 
 // Export singleton instance
@@ -561,3 +399,36 @@ export const jobAssignmentService = new JobAssignmentService();
 
 // Export service class for advanced usage
 export default JobAssignmentService;
+
+
+
+
+
+// to use jobAssignmentService in fronted, you can import it like this:
+
+// import { jobAssignmentService } from './services/jobAssignmentService';
+
+// // Example usage
+// async function handleAssignment() {
+//     try {
+//         // Create new assignment
+//         const assignment = await jobAssignmentService.create({
+//             jobId: 'job123',
+//             workerId: 'worker456',
+//             hourlyRate: 25,
+//             estimatedDuration: 30,
+//             milestones: [
+//                 { title: 'Phase 1', dueDate: '2024-01-15' },
+//                 { title: 'Phase 2', dueDate: '2024-02-15' }
+//             ]
+//         });
+
+//         // Approve assignment
+//         await jobAssignmentService.approve(assignment.id, {
+//             note: 'Assignment approved after review'
+//         });
+
+//         // Submit timesheet
+//         await jobAssignmentService.submitTimesheet(assignment.id, {
+//             date: '2024-01-10',
+//             hours:
