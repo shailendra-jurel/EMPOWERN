@@ -236,7 +236,6 @@ class JobAssignmentService {
             `Error deleting job assignment ${id}`
         );
     }
-
     /**
      * Handle assignment workflow transitions
      * @private
@@ -268,7 +267,6 @@ class JobAssignmentService {
             `Processing ${action} for assignment ${id}`
         );
     }
-
     /**
      * Approve assignment
      * @param {string} id - Assignment ID
@@ -555,9 +553,7 @@ async exportAssignment(id, format = 'pdf') {
     );
 }
 }
-
 // Export singleton instance
 export const jobAssignmentService = new JobAssignmentService();
-
 // Export service class for advanced usage
 export default JobAssignmentService;

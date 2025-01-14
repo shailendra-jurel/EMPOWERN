@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { Form, Input, Button, message } from 'antd';
 import { jobService } from '../../calls/jobCalls';
 import { getContractorById } from '../../calls/contractorCalls';
-// import { useAppContext } from '../GlobalContext';
 import { useSelector } from 'react-redux';
 
 const AddProjectStep3 = () => {
@@ -28,7 +27,6 @@ const AddProjectStep3 = () => {
       navigate('/contractor/add-project-step2');
       return;
     }
-
     const loadJobDetails = async () => {
       try {
         const jobData = await jobService.getJobById(projectId);

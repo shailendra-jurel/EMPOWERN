@@ -23,11 +23,11 @@ import EmployeeDetails from './components/ContractorFlow/EmployeeDetails'
 import ProjectApplications  from './components/ContractorFlow/ProjectDetails'
 import ProjectDetails  from './components/ContractorFlow/ProjectDetails'
 import ProjectList  from './components/ContractorFlow/ProjectList'
-// import AddProjectStep from './components/ContractorFlow/AddProjectStep'
-import  AddProjectStep2  from './components/ContractorFlow/AddProjectStep2'
-import AddProjectStep3  from './components/ContractorFlow/AddProjectStep3'
+// import  AddProjectStep2  from './components/ContractorFlow/AddProjectStep2'
+// import AddProjectStep3  from './components/ContractorFlow/AddProjectStep3'
 import ContractorMainPage from './components/ContractorFlow/ContractorMainPage'
 import ContractPage from './components/ContractPage';
+import CreateJob from './components/ContractorFlow/CreateJob';
 
 // Machine  Flow    i haven't created yet  but will made it soon
 import MachineMainPage from './components/MachineFlow/MachineMainPage';
@@ -62,9 +62,9 @@ function App(){
           {/* Contractor Flow Routes */}
           <Route path="/contractor">
             <Route path="main-page" element={<ContractorMainPage />} />
-            {/* <Route path="add-project" element={<AddProjectStep />} /> */}
-            <Route path="add-project-step2" element={<AddProjectStep2 />} />
-            <Route path="add-project-step3" element={<AddProjectStep3 />} />
+            <Route path="create-job" element={<CreateJob />} />
+            {/* <Route path="add-project-step2" element={<AddProjectStep2 />} />
+            <Route path="add-project-step3" element={<AddProjectStep3 />} /> */}
             <Route path="employee-details" element={<EmployeeDetails />} />
             <Route path="project-applications" element={<ProjectApplications />} />
             <Route path="project-details" element={<ProjectDetails />} />

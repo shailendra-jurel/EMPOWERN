@@ -26,7 +26,7 @@ const ContractorMainPage = () => {
             <Card
               hoverable
               className="shadow-md rounded-lg"
-              onClick={() => navigate('/contractor/add-project-step2')}
+              onClick={() => navigate('/contractor/create-job')}
             >
               <Title level={4}>Add New Project</Title>
               <Text>Create a new project and post job opportunities.</Text>
